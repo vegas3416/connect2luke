@@ -15,7 +15,7 @@ module.exports = {
       
       myResponse.on('response', function (response) {
         
-         console.log("I got a response back: " + response);
+         console.log("I got a response back: " + response.result.fulfillment.speech);
       });
       
       myResponse.on('error', function (error) {

@@ -17,10 +17,10 @@ const AUTHORIZATION_API = "/oauth/token";
 var WEBHOOK_VERIFICATION_TOKEN_HEADER = "X-OUTBOUND-TOKEN".toLowerCase();
 const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
 
-/*
+
 var APP_ID = "64cf20e3-aa5d-4fb8-85d2-c0ffb42f0509";
 var APP_SECRET = "4vced0sp4j01lghq8f3eoim8jzt3z0ls";
-var WEBHOOK_SECRET = "kipw7dhwaanvpc4g9j8k0sh9p7v8nagt";*/
+var WEBHOOK_SECRET = "4w5t7po3b9yalemdujab9lhlg5zy13mh";
 
 
 //probably dont need th ejs stuff

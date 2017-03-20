@@ -11,6 +11,7 @@ var APP_ID = process.env.APP_ID;
 var APP_SECRET = process.env.APP_SECRET;
 var WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 
+console.log(APP_ID);
 
 const WWS_URL = "https://api.watsonwork.ibm.com";
 const AUTHORIZATION_API = "/oauth/token";

@@ -1,6 +1,6 @@
 //This is what is going to be used to sent out for processing//
-const apiai = require("apiai");
-const app = apiai(process.env.CLIENT_ACCESS_TOKEN);
+var apiai = require("apiai");
+var app = apiai(process.env.CLIENT_ACCESS_TOKEN);
 
 module.exports = {
     
@@ -9,19 +9,20 @@ module.exports = {
       var name = userName.split(" ")[0];
       
       //////getting our response setup
-      let myResponse = app.textRequest(text, {
+      var myResponse = app.textRequest(text, {
         sessionId: "Luke"
       });
       
-      myResponse.on('response', (response) => {
+      myResponse.on('response', function (response) {
         
          console.log("I got a response back: " + response);
       });
       
-      myResponse.on('error', (error) => {
+      myResponse.on('error', function (error) {
         console.log(error);
       });
       
+      myResponse.end();
       
       //////
       if(text === "hi"){

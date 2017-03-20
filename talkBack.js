@@ -8,14 +8,11 @@ module.exports = {
     
   talkBack: function talkBack(text, userName, token) {
       
-      var name = userName.split(" ")[0].substr(0,1).toUpperCase().substr(1).toLowerCase();
-   /*   
-      var firstL = userName.substr(0,1).toUpperCase();
-      var restL = userName.substr(1).toLocaleLowerCase();
-      var name = firstL + restL;*/
-      
-      console.log("did we get here: ");
-      
+      var firstName = userName.split(" ")[0];
+      var firstL = firstName.substr(0,1).toUpperCase();
+      var rest = firstName.substr(1).toLowerCase();
+      var name = firstL + rest;
+   
       //////getting our response setup
       let apiai = app.textRequest(text, {
         sessionId: "Luke"

@@ -124,7 +124,7 @@ app.post("/webhook", function(req, res) {
 
 ///Listener
 app.listen(process.env.PORT, process.env.IP, function() {
-  console.log("Started App");
+  console.log("Started App: " + APP_ID);
 });
 
 ////////Where my functions start for everything. May need to separate to different files///

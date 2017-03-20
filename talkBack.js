@@ -10,20 +10,20 @@ module.exports = {
       var name = userName.split(" ")[0];
       
       //////getting our response setup
-      var myResponse = app.textRequest(text, {
+      let apiai = app.textRequest(text, {
         sessionId: "Luke"
       });
       
-      myResponse.on('response', function (response) {
+      apiai.on('response', (response) => {
         
          console.log("I got a response back: " + response.result.fulfillment.speech);
       });
       
-      myResponse.on('error', function (error) {
+      apiai.on('error', (error) => {
         console.log(error);
       });
       
-      myResponse.end();
+      apiai.end();
       
       //////
       if(text === "hi"){

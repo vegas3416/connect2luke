@@ -71,13 +71,11 @@ app.post("/webhook", function(req, res) {
       console.log("INFO: Skipping our own message Body: " + JSON.stringify(body));
       return;
     }
-    
     //response right away so no issues
-    res.status(200).end();
     
     talk.talkBack(body["content"], body.userName, token);
     
-    
+    res.status(200).end();
     // TODO
     // console.log(JSON.parse(token.req.res.body)["access_token"]);
     // JSON.parse((token.req.res.body).access_token)

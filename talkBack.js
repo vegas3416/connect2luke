@@ -6,6 +6,7 @@ module.exports = {
     
   talkBack: function talkBack(text, userName) {
       
+      console.log("App id: " + app);
       var name = userName.split(" ")[0];
       
       //////getting our response setup
@@ -22,7 +23,7 @@ module.exports = {
         console.log(error);
       });
       
-      myResponse.end();
+      myResponse.status(200).end();
       
       //////
       if(text === "hi"){

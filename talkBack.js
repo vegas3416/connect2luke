@@ -1,4 +1,4 @@
-//This is what is going to be used to sent out for processing
+//This is what is going to be used to sent out for processing//
 
 module.exports = {
     

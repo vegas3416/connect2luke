@@ -2,6 +2,8 @@ var express = require("express");
 var app = express();
 var request = require("request");
 var crypto = require("crypto");
+/*const apiai = require("apiai");
+const ai = apiai(process.env.CLIENT_ACCESS_TOKEN);*/
 
 var talk = require("./talkBack");
 ///

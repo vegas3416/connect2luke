@@ -8,7 +8,8 @@ module.exports = {
     
   talkBack: function talkBack(text, userName, token) {
       
-      var name = userName.split(" ")[0];
+      userName.toLowerCase;
+      var name = userName.charAt(0).toUpperCase();
       
       console.log("did we get here: ");
       

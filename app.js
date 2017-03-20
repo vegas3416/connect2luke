@@ -66,59 +66,25 @@ app.post("/webhook", function(req, res) {
 ///Event type message-created  start
   if (eventType === "message-created") {
     
-    var Luke = talk.talkBack(body["content"], body.userName);
-    
-    res.status(200).end();
-
+    //kick out if message comes from Luke-bot
     if (body.userId === APP_ID) {
       console.log("INFO: Skipping our own message Body: " + JSON.stringify(body));
       return;
     }
-
+    
+    //response right away so no issues
+    res.status(200).end();
+    
+    talk.talkBack(body["content"], body.userName, token);
+    
+    
     // TODO
     // console.log(JSON.parse(token.req.res.body)["access_token"]);
     // JSON.parse((token.req.res.body).access_token)
     // DONT DELETE ANYTHING BETWEEN HERE!!!!
 
     ///////////////
-           const appMessage = {
-                "type": "appMessage",
-                "version": "1",
-                "annotations": [{
-                    "type": "generic",
-                    "version": "1",
-
-                    "title": "",
-                    "text": "",
-                    "color": "blue",
-                }]
-            };
-
-            const sendMessageOptions = {
-                "url": "https://api.watsonwork.ibm.com/v1/spaces/58c4c152e4b0a3f2c30975e5/messages",
-                "headers": {
-                    "Content-Type": "application/json",
-                    "jwt": JSON.parse(token.req.res.body)["access_token"]
-                },
-                "method": "POST",
-                "body": ""
-            };
-
-            //appMessage.annotations[0].title = "Luke";
-            //talkBack function -- going to try to implement this
-            appMessage.annotations[0].text = Luke ;
-            sendMessageOptions.body = JSON.stringify(appMessage);    
-
-    //console.log("Testing to make sure token is still here: " + JSON.parse(token.req.res.body)["access_token"]);
-
-    request(sendMessageOptions, function(err, response, sendMessageBody) {
-
-              if (err || response.statusCode !== 201) {
-                  console.log("ERROR: Posting to " + sendMessageOptions.url + "resulted on http status code: " + response.statusCode + " and error " + err);
-              }
-
-    }); 
-
+           
   } //closing bracking for IF statement 'message-created'
 
 }); /////END OF app.post 

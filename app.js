@@ -65,13 +65,19 @@ app.post("/webhook", function(req, res) {
 ///Event type message-created  start
   if (eventType === "message-created") {
    
-    talk.talkBack(body["content"], body.userName, token);
-    
+   var message = body["content"];
     //kick out if message comes from Luke-bot
     if (body.userId === APP_ID) {
       console.log("INFO: Skipping our own message Body: " + JSON.stringify(body));
       return;
     }
+    
+    if(message.indexOf('luke' || 'Luke' || 'LUKE')){
+      
+      talk.talkBack(body["content"], body.userName, token);
+    
+    }
+    
     // TODO
     // console.log(JSON.parse(token.req.res.body)["access_token"]);
     // JSON.parse((token.req.res.body).access_token)

@@ -46,7 +46,9 @@ module.exports = {
 
             //appMessage.annotations[0].title = "Luke";
             //talkBack function -- going to try to implement this
-            appMessage.annotations[0].text = name + " " + response.result.fulfillment.speech ;
+           
+            
+            appMessage.annotations[0].text = "@" + userName + " " + response.result.fulfillment.speech ;
             sendMessageOptions.body = JSON.stringify(appMessage);    
 
     //console.log("Testing to make sure token is still here: " + JSON.parse(token.req.res.body)["access_token"]);

@@ -18,7 +18,7 @@ module.exports = {
       //got response back to use
       apiai.on('response', (response) => {
         
-        
+        console.log("did we get here: " , response);
         const appMessage = {
                 "type": "appMessage",
                 "version": "1",

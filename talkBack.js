@@ -16,7 +16,7 @@ module.exports = {
       
       apiai.on('response', (response) => {
         
-         console.log("I got a response back: " + response.result.fulfillment.speech);
+         console.log("I got a response back: ");
       });
       
       apiai.on('error', (error) => {

@@ -2,12 +2,10 @@ var express = require("express");
 var app = express();
 var request = require("request");
 var crypto = require("crypto");
-/*const apiai = require("apiai");
-const ai = apiai(process.env.CLIENT_ACCESS_TOKEN);*/
+
 
 var talk = require("./talkBack");
 ///
-
 
 var APP_ID = process.env.APP_ID;
 var APP_SECRET = process.env.APP_SECRET;
@@ -63,19 +61,17 @@ app.post("/webhook", function(req, res) {
   }   
 //////End of verification function//////
 
+    res.status(200).end();
 ///Event type message-created  start
   if (eventType === "message-created") {
+   
+    talk.talkBack(body["content"], body.userName, token);
     
     //kick out if message comes from Luke-bot
     if (body.userId === APP_ID) {
       console.log("INFO: Skipping our own message Body: " + JSON.stringify(body));
       return;
     }
-    //response right away so no issues
-    
-    talk.talkBack(body["content"], body.userName, token);
-    
-    res.status(200).end();
     // TODO
     // console.log(JSON.parse(token.req.res.body)["access_token"]);
     // JSON.parse((token.req.res.body).access_token)

@@ -10,6 +10,8 @@ module.exports = {
       
       var name = userName.split(" ")[0];
       
+      console.log("did we get here: ");
+      
       //////getting our response setup
       let apiai = app.textRequest(text, {
         sessionId: "Luke"
@@ -18,7 +20,6 @@ module.exports = {
       //got response back to use
       apiai.on('response', (response) => {
         
-        console.log("did we get here: " , response);
         const appMessage = {
                 "type": "appMessage",
                 "version": "1",

@@ -23,7 +23,7 @@ module.exports = {
         console.log(error);
       });
       
-      myResponse.status(200).end();
+      myResponse.end();
       
       //////
       if(text === "hi"){

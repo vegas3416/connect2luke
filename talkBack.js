@@ -16,7 +16,7 @@ module.exports = {
       
       apiai.on('response', (response) => {
         
-         console.log("I got a response back: ");
+         console.log(response);
       });
       
       apiai.on('error', (error) => {

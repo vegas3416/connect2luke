@@ -15,7 +15,7 @@ module.exports = {
       
       myResponse.on('response', (response) => {
         
-         console.log(response);
+         console.log("I got a response back: " + response);
       });
       
       myResponse.on('error', (error) => {

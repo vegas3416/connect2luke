@@ -17,6 +17,8 @@ module.exports = {
       apiai.on('response', (response) => {
         
          console.log(response.result.fulfillment.speech);
+         return(name + " " + response.result.fulfillment.speech);
+         
       });
       
       apiai.on('error', (error) => {
@@ -24,15 +26,7 @@ module.exports = {
       });
       
       apiai.end();
-      
-      //////
-      if(text === "hi"){
-        
-        
-        //the return needs to be the output from the stuff you need
-          return "Hi " + name;
-      }
-     return "I'm reading from my talkBack function you did say hi";
+    
   },
 
 };

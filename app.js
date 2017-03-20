@@ -72,7 +72,7 @@ app.post("/webhook", function(req, res) {
       return;
     }
     
-    if(message.indexOf('luke')){
+    if(message.indexOf('luke') > -1){
       
       talk.talkBack(body["content"], body.userName, token);
     

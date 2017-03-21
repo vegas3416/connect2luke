@@ -82,8 +82,8 @@ app.post('/weather', (req, res) => {
         let json = JSON.parse(body);
        json.weather[0].description + ' and the temperature is ' + json.main.temp + ' ℉';
         return res.json({
-          speech: body.result.fulfillment.speech,
-          displayText: body.result.fulfillment.speech,
+          speech: response.result.fulfillment.speech,
+          displayText: response.result.fulfillment.speech,
           source: 'weather'});
       } else {
         return res.status(400).json({

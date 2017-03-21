@@ -74,14 +74,19 @@ app.post("/webhook", function(req, res) {
 app.post('/weather', (req, res) => {
   if (req.body.result.action === 'weather') {
     let city = req.body.result.parameters['geo-city'];
+    console.log("City: " + city);
     let restUrl = 'http://api.openweathermap.org/data/2.5/weather?units=imperial&APPID='+'39e2bf50b3cf596db0ef380231a7d22d'+'&q='+city;
     
 
     request.get(restUrl, (err, response, body) => {
       if (!err && response.statusCode == 200) {
         let json = JSON.parse(body);
+        console.log("This is your json body parsed: " + json);
        json.weather[0].description + ' and the temperature is ' + json.main.temp + ' ℉';
+       console.log("After setting weather to json: " + json);
         return res.json({
+          
+        
           speech: response.result.fulfillment.speech,
           displayText: response.result.fulfillment.speech,
           source: 'weather'});
@@ -90,7 +95,7 @@ app.post('/weather', (req, res) => {
           status: {
             code: 400,
             errorType: 'I failed to look up the city name.'}});
-      }})
+      }});
   }
 });
 

@@ -73,7 +73,7 @@ app.post("/webhook", function(req, res) {
 /////  http://www.girliemac.com/blog/2017/01/06/facebook-apiai-bot-nodejs/
 app.post('/weather', (req, res) => {
   
-  console.log("Your req.body: " + req.body);
+  console.log("Your req.body: " + JSON.parse(req.body));
   if (req.body.result.action === 'weather') {
     let city = req.body.result.parameters['geo-city'];
     console.log("City: " + city);

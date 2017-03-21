@@ -3,9 +3,7 @@ var app = express();
 var request = require("request");
 var crypto = require("crypto");
 
-
 var talk = require("./talkBack");
-///
 
 var APP_ID = process.env.APP_ID;
 var APP_SECRET = process.env.APP_SECRET;
@@ -17,15 +15,6 @@ const WWS_URL = "https://api.watsonwork.ibm.com";
 const AUTHORIZATION_API = "/oauth/token";
 var WEBHOOK_VERIFICATION_TOKEN_HEADER = "X-OUTBOUND-TOKEN".toLowerCase();
 const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
-
-
-/*var APP_ID = "64cf20e3-aa5d-4fb8-85d2-c0ffb42f0509";
-var APP_SECRET = "4vced0sp4j01lghq8f3eoim8jzt3z0ls";
-var WEBHOOK_SECRET = "4w5t7po3b9yalemdujab9lhlg5zy13mh";*/
-
-
-//probably dont need th ejs stuff
-// app.set("view engine", "ejs");
 
 ////////////////////
 //Code taken from another to read in the Json object of the body
@@ -50,52 +39,68 @@ app.post("/webhook", function(req, res) {
   //console.log("you tried me");
   var body = JSON.parse(req.rawBody.toString());
   //console.log(body);
-
   var eventType = body.type;
-
   //////verification event
   if (eventType === "verification") {
     //console.log("Got here");
     verifyWorkspace(res, body.challenge);
     return;
-  }   
-//////End of verification function//////
+  }
+  //////End of verification function//////
 
-    res.status(200).end();
-///Event type message-created  start
+  res.status(200).end();
+  ///Event type message-created  start
   if (eventType === "message-created") {
-   
-   var message = body["content"].toLowerCase();
+
+    var message = body["content"].toLowerCase();
     //kick out if message comes from Luke-bot
     if (body.userId === APP_ID) {
       console.log("INFO: Skipping our own message Body: " + JSON.stringify(body));
       return;
     }
-    
-    if(message.indexOf('luke') > -1){
-      
-      talk.talkBack(body["content"], body.userName, token);
-    
-    }
-    
-    // TODO
-    // console.log(JSON.parse(token.req.res.body)["access_token"]);
-    // JSON.parse((token.req.res.body).access_token)
-    // DONT DELETE ANYTHING BETWEEN HERE!!!!
 
-    ///////////////
-           
+    if (message.indexOf('luke') > -1) {
+
+      talk.talkBack(body["content"], body.userName, token);
+
+    }
+
   } //closing bracking for IF statement 'message-created'
 
 }); /////END OF app.post 
+
+////////////////////Trying OUT this weather API here
+/////  http://www.girliemac.com/blog/2017/01/06/facebook-apiai-bot-nodejs/
+app.post('/weather', (req, res) => {
+  if (req.body.result.action === 'weather') {
+    let city = req.body.result.parameters['geo-city'];
+    let restUrl = 'http://api.openweathermap.org/data/2.5/weather?APPID='+ '39e2bf50b3cf596db0ef380231a7d22d' +'&q='+ city;
+
+    request.get(restUrl, (err, response, body) => {
+      if (!err && response.statusCode == 200) {
+        let json = JSON.parse(body);
+       json.weather[0].description + ' and the temperature is ' + json.main.temp + ' ℉';
+        return res.json({
+          speech: body.result.fulfillment.speech,
+          displayText: body.result.fulfillment.speech,
+          source: 'weather'});
+      } else {
+        return res.status(400).json({
+          status: {
+            code: 400,
+            errorType: 'I failed to look up the city name.'}});
+      }})
+  }
+});
+
+
+//////////////////
 
 
 ///Listener
 app.listen(process.env.PORT, process.env.IP, function() {
   console.log("Started App");
 });
-
-////////Where my functions start for everything. May need to separate to different files///
 
 //Verification function
 function verifyWorkspace(response, challenge) {

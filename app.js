@@ -71,18 +71,19 @@ app.post("/webhook", function(req, res) {
 
 ////////////////////Trying OUT this weather API here
 /////  http://www.girliemac.com/blog/2017/01/06/facebook-apiai-bot-nodejs/
+
 app.post('/weather', (req, res) => {
   
-  console.log("Your req.body: " + JSON.parse(req.body));
+  console.log("Your req.body: " + JSON.parse(req.rawBody.toString()));
   if (req.body.result.action === 'weather') {
-    let city = req.body.result.parameters['geo-city'];
+    var city = req.body.result.parameters['geo-city'];
     console.log("City: " + city);
-    let restUrl = 'http://api.openweathermap.org/data/2.5/weather?units=imperial&APPID='+'39e2bf50b3cf596db0ef380231a7d22d'+'&q='+city;
+    var restUrl = 'http://api.openweathermap.org/data/2.5/weather?units=imperial&APPID='+'39e2bf50b3cf596db0ef380231a7d22d'+'&q='+city;
     
 
     request.get(restUrl, (err, response, body) => {
       if (!err && response.statusCode == 200) {
-        let json = JSON.parse(body);
+        var json = JSON.parse(body);
         console.log("This is your json body parsed: " + json);
        json.weather[0].description + ' and the temperature is ' + json.main.temp + ' ℉';
        console.log("After setting weather to json: " + json);

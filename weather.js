@@ -31,6 +31,8 @@ module.exports = {
                 var city = body.result.parameters["geo-city"];
                 //console.log("This is your city: " + city);
                 var restURL = "http://api.openweathermap.org/data/2.5/forecast/daily?units=imperial&q=" + city + "&cnt=5&APPID=" + process.env.WEATHER;
+                
+                console.log(restURL);
 
                 request.get(restURL, function(err, response, body) {
 

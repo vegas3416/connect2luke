@@ -1,7 +1,7 @@
 //This is what is going to be used to sent out for processing//
 var apiai = require("apiai");
 var request = require("request");
-var app = apiai(process.env.CLIENT_ACCESS_TOKEN);
+var app = apiai(process.env.API_AI);
 
 
 module.exports = {
@@ -14,7 +14,7 @@ module.exports = {
     var name = firstL + rest;
 
     //////Sending our text to be processed
-    let apiai = app.textRequest(text, {
+    var apiai = app.textRequest(text, {
       sessionId: "Luke"
     });
     //Response from process
@@ -41,11 +41,9 @@ module.exports = {
         "method": "POST",
         "body": ""
       };
-      //appMessage.annotations[0].title = "Luke";
-      //talkBack function -- going to try to implement this
-      
-      
-      appMessage.annotations[0].text = "*" + name + "* " + response.result.fulfillment.speech;
+   
+      //console.log("Response results: " + JSON.stringify(response.result));
+      appMessage.annotations[0].text = response.result.fulfillment.speech;
       sendMessageOptions.body = JSON.stringify(appMessage);
 
       request(sendMessageOptions, function(err, response, sendMessageBody) {

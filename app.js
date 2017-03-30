@@ -63,12 +63,12 @@ app.post("/webhook", function(req, res) {
     //////////////
     if (body.create) {
       msg = body.id + "\n" + body.title + "\n*URL: *" + body.url + "\n" + body.info;
-      color = '"red"';
+      color = 'red';
     }
     else if (body.update) {
       console.log("I got into update");
       msg = body.id + "\n" + body.title + "\n*URL: *" + body.url + "\n" + body.info;
-      color = '"yellow"';
+      color = 'yellow';
     }
     //////////////
     

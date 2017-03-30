@@ -57,7 +57,7 @@ app.post("/webhook", function(req, res) {
   if(zen)  //ONLY FOR ZENDESK create of ticket (didn't want to separate it all out into another JS file..YES I"M LAZY)
   {
     
-    console.log("Body before you get into zen: " + body);
+    console.log("Body before you get into zen: " + JSON.stringify(body));
     var msg = "";
     var color = "";
     //////////////

@@ -51,13 +51,22 @@ app.post("/webhook", function(req, res) {
   //var body = JSON.parse(req.rawBody.toString());
   var body = req.body;
   var eventType = body.type;
-  var zen = body.create;
+  var zen = body.zen;
   sender = body.userName;
   ///Testing Zendesk
   if(zen)  //ONLY FOR ZENDESK create of ticket (didn't want to separate it all out into another JS file..YES I"M LAZY)
   {
+    var msg = "";
+    var color = "";
     //////////////
-    var msg = body.id + "\n" + body.title + "\n" + body.url + "\n" + body.info;
+    if (zen.create) {
+      msg = body.id + "\n" + body.title + "\n*URL: *" + body.url + "\n" + body.info;
+      color = "red";
+    }
+    else if (zen.update) {
+      msg = body.id + "\n" + body.title + "\n*URL: *" + body.url + "\n" + body.info;
+      color = "yellow";
+    }
     //////////////
     const appMessage = {
       "type": "appMessage",
@@ -67,7 +76,7 @@ app.post("/webhook", function(req, res) {
         "version": "1",
         "title": "",
         "text": "",
-        "color": "RED",
+        "color": color,
       }]
     };
     const sendMessageOptions = {

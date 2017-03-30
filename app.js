@@ -39,6 +39,9 @@ const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
 }
 app.use(rawBody);*/
 ////////////////////
+var sender = "";
+
+///
 app.get("/", function(req, res) {
   res.send("Luke is alive!");
 });
@@ -48,15 +51,44 @@ app.post("/webhook", function(req, res) {
   //var body = JSON.parse(req.rawBody.toString());
   var body = req.body;
   var eventType = body.type;
-  var zen = body.Title;
-  
-  console.log("Got something from zendesk" + body);
-  
+  var zen = body.create;
+  sender = body.userName;
   ///Testing Zendesk
-  if(zen === "Title")
+  if(zen)  //ONLY FOR ZENDESK create of ticket (didn't want to separate it all out into another JS file..YES I"M LAZY)
   {
-    console.log("Got something from zendesk");
-  }
+    //////////////
+    var msg = body.id + "\n" + body.title + "\n" + body.url + "\n" + body.info;
+    //////////////
+    const appMessage = {
+      "type": "appMessage",
+      "version": "1",
+      "annotations": [{
+        "type": "generic",
+        "version": "1",
+        "title": "",
+        "text": "",
+        "color": "RED",
+      }]
+    };
+    const sendMessageOptions = {
+      "url": "https://api.watsonwork.ibm.com/v1/spaces/58c4c152e4b0a3f2c30975e5/messages",
+      "headers": {
+        "Content-Type": "application/json",
+        "jwt": JSON.parse(token.req.res.body)["access_token"]
+      },
+      "method": "POST",
+      "body": ""
+    };
+    appMessage.annotations[0].text = msg;
+    sendMessageOptions.body = JSON.stringify(appMessage);
+
+    request(sendMessageOptions, function(err, response, sendMessageBody) {
+      if (err || response.statusCode !== 201) {
+        console.log("ERROR: Posting to " + sendMessageOptions.url + "resulted on http status code: " + response.statusCode + " and error " + err);
+      }
+    });
+    return;
+    }
  
   //////verification event
   if (eventType === "verification") {
@@ -77,7 +109,6 @@ app.post("/webhook", function(req, res) {
       //console.log("INFO: Skipping our own message Body: " + JSON.stringify(body));
       return;
     }
-    
     
     else if (message.indexOf('luke') > -1) {
       console.log("Got in here");
@@ -107,7 +138,7 @@ app.post('/api', function(req, res) {
   }
   else if(body.result.action === 'zendesk'){
       console.log("See Zendesk as my action");
-      zendesk.zendesk(body,res);
+      zendesk.zendesk(body,res, sender);
   }
 });
 //////////////////

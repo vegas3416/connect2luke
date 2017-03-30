@@ -62,11 +62,17 @@ app.post("/webhook", function(req, res) {
     //////////////
     if (body.create) {
       msg = body.id + "\n" + body.title + "\n*URL: *" + body.url + "\n" + body.info;
-      color = 'red';
+      if(message.indexOf('ibm') > -1) { 
+        color = 'green'; 
+      }
+      else { 
+        color = 'red'; 
+      }
     }
     else if (body.update) {
       console.log("I got into update");
-      msg = body.id + "\n" + body.title + "\n*Assigned To: *" + body.assigned + "\n*URL: *" + body.url + "\n" + body.info;
+      msg = body.id + "\n" + body.title + "\n*Assigned To: *" + body.assigned + "\n*Latest request came from: *" +
+      body.requester + "\n*URL: *" + body.url + "\n" + body.info;
       color = 'yellow';
     }
 

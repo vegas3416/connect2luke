@@ -50,7 +50,7 @@ app.post("/webhook", function(req, res) {
   var eventType = body.type;
   var zen = body.Title;
   
-  console.log("Got something from zendesk");
+  console.log("Got something from zendesk" + body);
   
   ///Testing Zendesk
   if(zen === "Title")

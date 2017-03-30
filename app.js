@@ -48,12 +48,11 @@ app.get("/", function(req, res) {
 ////////////////////
 app.post("/webhook", function(req, res) {
 
-  //var body = JSON.parse(req.rawBody.toString());
   var body = req.body;
   var eventType = body.type;
   var zen = body.zen;
   sender = body.userName;
-   ///Testing Zendesk
+ 
   if(zen)  //ONLY FOR ZENDESK create of ticket (didn't want to separate it all out into another JS file..YES I"M LAZY)
   {
     
@@ -67,11 +66,10 @@ app.post("/webhook", function(req, res) {
     }
     else if (body.update) {
       console.log("I got into update");
-      msg = body.id + "\n" + body.title + "\n*URL: *" + body.url + "\n" + body.info;
+      msg = body.id + "\n" + body.title + "\n*Assigned To: *" + body.assigned + "\n*URL: *" + body.url + "\n" + body.info;
       color = 'yellow';
     }
-    //////////////
-    
+
     console.log("This the color that got assigned: " + color);
     console.log("\nThis is what msg has in it: " + msg);
     const appMessage = {

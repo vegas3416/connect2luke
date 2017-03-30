@@ -61,11 +61,11 @@ app.post("/webhook", function(req, res) {
     //////////////
     if (zen.create) {
       msg = body.id + "\n" + body.title + "\n*URL: *" + body.url + "\n" + body.info;
-      color = "red";
+      color = '"red"';
     }
     else if (zen.update) {
       msg = body.id + "\n" + body.title + "\n*URL: *" + body.url + "\n" + body.info;
-      color = "yellow";
+      color = '"yellow"';
     }
     //////////////
     const appMessage = {

@@ -68,6 +68,9 @@ app.post("/webhook", function(req, res) {
       color = '"yellow"';
     }
     //////////////
+    
+    console.log("This the color that got assigned: " + color);
+    console.log("\nThis is what msg has in it: " + msg);
     const appMessage = {
       "type": "appMessage",
       "version": "1",

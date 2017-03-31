@@ -79,7 +79,7 @@ module.exports = {
                     case 'user':
                            for (var x = 0; x < json.results.length; x++) {
                                 if(json.results[x].subject){
-                                    msg += "*ID: " + json.results[x].id + "\n*Status: *" + json.results[x].status + "*\n*Subject: *" + json.results[x].subject +
+                                    msg += "*ID: *" + json.results[x].id + "\n*Status: *" + json.results[x].status + "\n*Subject: *" + json.results[x].subject +
                                     "\n*URL: *" + "https://ibmworkspace.zendesk.com/agent/tickets/" + json.results[x].id + "\n";
                                }
                             //console.log(msg);

@@ -33,7 +33,7 @@ module.exports = {
       };
       
       const sendMessageOptions = {
-        "url": "https://api.watsonwork.ibm.com/v1/spaces/58c4c152e4b0a3f2c30975e5/messages",
+        "url": "https://api.watsonwork.ibm.com/v1/spaces/58debcace4b090f924bac8ea/messages",
         "headers": {
           "Content-Type": "application/json",
           "jwt": JSON.parse(token.req.res.body)["access_token"]

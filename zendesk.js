@@ -72,9 +72,14 @@ module.exports = {
                     case 'key':
                         for (var x = 0; x < json.results.length; x++) {
                                 if(json.results[x].subject){
+                                    console.log("Show me first ticket found: " + json.results[0].subject);
                                     msg += "*ID: " + json.results[x].id + "*\n*Subject: *" + json.results[x].subject;
                                }
+                               else{
+                                   msg = "Having an issue....please try again.";
+                               }
                         }
+                        
                         break;
                     case 'user':
                            for (var x = 0; x < json.results.length; x++) {

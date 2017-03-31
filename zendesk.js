@@ -29,7 +29,7 @@ module.exports = {
                 console.log("This is type: " + type);
                 pick = 'key';
             }
-            else if (search.zendesk && search.my){
+            else if (search.description && search.my){
                 type = '"' + sender + '"';
                 console.log("I got to my tickets: " + type);
                 pick = 'user';

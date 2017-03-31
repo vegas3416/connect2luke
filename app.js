@@ -63,9 +63,11 @@ app.post("/webhook", function(req, res) {
     if (body.create) {
       msg = body.id + "\n" + body.title + "\n*URL: *" + body.url + "\n" + body.info;
       if(message.indexOf('ibm') > -1) { 
+        console.log("You got here b/c ibmer created a ticket");
         color = 'green'; 
       }
       else { 
+        console.log("You got here b/c NON-ibmer created a ticket");
         color = 'red'; 
       }
     }

@@ -12,7 +12,6 @@ module.exports = {
             var search = body.result.parameters;
             console.log(search);
             var errorMessage = (body.result.fulfillment.speech);
-            
             if (search.open && !search['number-integer']) {
                 console.log('open');
                 type = 'type:ticket status:open';

@@ -37,8 +37,8 @@ module.exports = {
             var options = {
                 url: 'https://ibmworkspace.zendesk.com/api/v2/search.json?query=' + type,
                 'auth': {
-                    'user': 'jvilleg@us.ibm.com/token',
-                    'pass': 'Jj65LTJ19SQnOOPyO4fndtjRH43rXz0zwigDLTgf',
+                    'user': process.env.Z_USER,
+                    'pass': process.env.Z_TOKEN,
                     'Accept': "application/json"
                 }
             };

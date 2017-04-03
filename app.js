@@ -134,6 +134,7 @@ app.post("/webhook", function(req, res) {
     else if (message.indexOf('luke') > -1) {
       console.log("Got in here");
       talk.talkBack(body["content"], body.userName, token);
+      console.log("Finished talk back");
     }
     //NOT FULLY IMPLEMENTED TO DO ANYTHING AT THE MOMENT
     else if(message.indexOf('!graphit') > -1){
@@ -153,13 +154,17 @@ app.post('/api', function(req, res) {
   console.log("In api post");
   if (body.result.action === 'weather' || body.result.action === 'forecast'){
       weather.weather(body,res);
+      return;
   }
   else if(body.result.action === 'google'){
       lookUp.lookUp(body,res);  
+      return;
   }
   else if(body.result.action === 'zendesk'){
       console.log("See Zendesk as my action");
       zendesk.zendesk(body,res, sender);
+      console.log("Finished zendesk function");
+      return;
   }
   
 });

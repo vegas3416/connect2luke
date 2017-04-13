@@ -1,7 +1,7 @@
-var express = require("express");
+const express = require("express");
 var app = express();
-var request = require("request");
-var crypto = require("crypto");
+const request = require("request");
+const crypto = require("crypto");
 var bodyParser = require("body-parser");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -15,69 +15,70 @@ var zendesk = require("./zendesk");
 var APP_ID = process.env.APP_ID;
 var APP_SECRET = process.env.APP_SECRET;
 
-//Different from production
 var WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+const SPACE_ID = "58c4c152e4b0a3f2c30975e5";
 
 
 const WWS_URL = "https://api.watsonwork.ibm.com";
 const AUTHORIZATION_API = "/oauth/token";
-var WEBHOOK_VERIFICATION_TOKEN_HEADER = "X-OUTBOUND-TOKEN".toLowerCase();
+const WEBHOOK_VERIFICATION_TOKEN_HEADER = "X-OUTBOUND-TOKEN".toLowerCase();
 const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
 
-////////////////////
-//Code taken from another to read in the Json object of the body
-/*function rawBody(req, res, next) {
-  var buffers = [];
-  req.on("data", function(chunk) {
-    buffers.push(chunk);
-  });
-  req.on("end", function() {
-    req.rawBody = Buffer.concat(buffers);
-    next();
-  });
-  console.log("I think I'm here");
-}
-app.use(rawBody);*/
-////////////////////
 var sender = "";
 
-///
 app.get("/", function(req, res) {
   res.send("Luke is alive!");
 });
-////////////////////
-app.post("/webhook", function(req, res) {
 
+app.post("/webhook", function(req, res) {
   var body = req.body;
   var eventType = body.type;
   var zen = body.zen;
   sender = body.userName;
- 
-  if(zen)  //ONLY FOR ZENDESK create of ticket (didn't want to separate it all out into another JS file..YES I"M LAZY)
-  {
-    
+
+
+  // Only for Zendesk POST calls
+  // (didn't want to separate it all out into another JS file..YES I"M LAZY)
+  if(zen)  {
     console.log("Body before you get into zen: " + JSON.stringify(body));
     var msg = "";
     var color = "";
-    //////////////
+
     if (body.create) {
-      msg = body.id + "\n" + body.title + "\n*URL: *" + body.url + "\n" + body.info;
-      if(message.indexOf('ibm') > -1) { 
-        color = 'green'; 
+      msg = body.id + 
+            "\n" +
+            body.title +
+            "\n*URL: *" +
+            body.url +
+            "\n" +
+            body.info;
+      if(message.indexOf('ibm') > -1) {
+        color = 'green';
       }
-      else { 
-        color = 'red'; 
+      else {
+        color = 'red';
       }
     }
     else if (body.update) {
       console.log("I got into update");
-      msg = body.id + "\n" + body.title + "\n*Assigned To: *" + body.assigned + "\n*Latest request came from: *" +
-      body.requester + "\n*URL: *" + body.url + "\n" + body.info;
+      msg = body.id +
+            "\n" +
+            body.title +
+            "\n*Assigned To: *" +
+            body.assigned +
+            "\n*Latest request came from: *" +
+            body.requester +
+            "\n*URL: *" +
+            body.url +
+            "\n" +
+            body.info;
       color = 'yellow';
     }
 
+
     console.log("This the color that got assigned: " + color);
     console.log("\nThis is what msg has in it: " + msg);
+
     const appMessage = {
       "type": "appMessage",
       "version": "1",
@@ -90,7 +91,7 @@ app.post("/webhook", function(req, res) {
       }]
     };
     const sendMessageOptions = {
-      "url": "https://api.watsonwork.ibm.com/v1/spaces/58c4c152e4b0a3f2c30975e5/messages",
+      "url": WWS_URL + "/v1/spaces/" + SPACE_ID + "/messages",
       "headers": {
         "Content-Type": "application/json",
         "jwt": JSON.parse(token.req.res.body)["access_token"]
@@ -98,81 +99,94 @@ app.post("/webhook", function(req, res) {
       "method": "POST",
       "body": ""
     };
+
     appMessage.annotations[0].text = msg;
     sendMessageOptions.body = JSON.stringify(appMessage);
 
     request(sendMessageOptions, function(err, response, sendMessageBody) {
       if (err || response.statusCode !== 201) {
-        console.log("ERROR: Posting to " + sendMessageOptions.url + "resulted on http status code: " + response.statusCode + " and error " + err);
+        console.log("ERROR: Posting to " +
+            sendMessageOptions.url +
+            "resulted on http status code: " +
+            response.statusCode +
+            " and error " + err);
       }
     });
     return;
-    }
- 
-  //////verification event
+  }
+
+  // Verification event
   if (eventType === "verification") {
-    //console.log("Got here: " + body.challenge);
     verifyWorkspace(res, body.challenge);
     return;
   }
-  //////End of verification function//////
 
   res.status(200).end();
-  ///Event type message-created  start
+
+  // Message created event
   if (eventType === "message-created") {
-    
- 
     var message = body["content"].toLowerCase();
-    //kick out if message comes from Luke-bot
+
+    // Ignore our own messages
     if (body.userId === APP_ID) {
-      //console.log("INFO: Skipping our own message Body: " + JSON.stringify(body));
       return;
     }
-    
+    // Handle if we were mentioned
     else if (message.indexOf('luke') > -1) {
-      console.log("Got in here");
-      talk.talkBack(body["content"], body.userName, token);
+      console.log("We were mentioned in a message");
+      talk.talkBack(body.content, body.userName, token, WWS_URL, SPACE_ID);
     }
-    //NOT FULLY IMPLEMENTED TO DO ANYTHING AT THE MOMENT
+    // To be implemented
     else if(message.indexOf('!graphit') > -1){
-      console.log("yep");
+      console.log("Got shortcut 'graphit' in a message");
       graph.graphit(body,res);
     }
 
-  } //closing bracking for IF statement 'message-created'
+  }
 
-}); /////END OF app.post 
+});
 
-////////////////////Trying OUT this weather API here
-/////  http://www.girliemac.com/blog/2017/01/06/facebook-apiai-bot-nodejs/
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// Trying out this weather API here:                                         //
+// http://www.girliemac.com/blog/2017/01/06/facebook-apiai-bot-nodejs/       //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 app.post('/api', function(req, res) {
-  
   var body = req.body;
   console.log("In api post");
   if (body.result.action === 'weather' || body.result.action === 'forecast'){
       weather.weather(body,res);
   }
   else if(body.result.action === 'google'){
-      lookUp.lookUp(body,res);  
+      lookUp.lookUp(body,res);
   }
   else if(body.result.action === 'zendesk'){
       console.log("See Zendesk as my action");
       zendesk.zendesk(body,res, sender);
   }
-  
 });
-//////////////////
-///Listener
+
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// Listener                                                                  //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 app.listen(process.env.PORT, process.env.IP, function() {
   console.log("Started App");
 });
 
-//Verification function
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// Verification function                                                     //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 function verifyWorkspace(response, challenge) {
 
-  //creating the object that is going to be used to send back to Workspace for verification
+  // Create the object that is going to be sent back to Workspace for
+  // verification.
   var bodyChallenge = {
-    //req.body.challenge is what is in the post request that I need to have for Workspace verification
+    // This is what we end up hashing
     "response": challenge
   };
 
@@ -180,28 +194,31 @@ function verifyWorkspace(response, challenge) {
   var responseBodyString = JSON.stringify(bodyChallenge);
 
   var tokenForVerification = crypto
-    //has the webhook secrte
+    // Use the webhook secret as hash key
     .createHmac("sha256", endPointSecret)
-    //update the responseBodyString and basically concatonating the webhook to end of it
+    // and hash the body ("response": challenge)
     .update(responseBodyString)
-    //converting that entire string to a hex value
+    // ending up with the hex formatted hash.
     .digest("hex");
   console.log("before hash");
-  //setting the header up with 200 response and the webhook hashed out
+  // Write our response headers
   response.writeHead(200, {
     "Content-Type": "application/json; charset=utf-8",
     "X-OUTBOUND-TOKEN": tokenForVerification
   });
 
+  // Add our body and send it off.
   response.end(responseBodyString);
   console.log("All hashed up");
 }
-/////////////End of Verification function
 
-//Assigning token for the oAuth token//
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// Obtain a token for oAuth                                                  //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 var token = request({
-
-  url: 'https://api.watsonwork.ibm.com/oauth/token',
+  url: WWS_URL + '/oauth/token',
   method: 'POST',
   auth: {
     user: APP_ID,
@@ -216,4 +233,3 @@ var token = request({
     console.log("Crap, not good!!", err);
   }
 });
-//////////////////End of oAuth piece after setting up token variable/////////////

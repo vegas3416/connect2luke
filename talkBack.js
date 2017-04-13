@@ -1,4 +1,12 @@
-//This is what is going to be used to sent out for processing//
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// We send each message from the space to Api.ai for processing.             //
+// Based on the result of that processing, Api.ai makes the required         //
+// callback to our app - zendesk, weather etc. That callback result is then  //
+// processed by Api.ai and Api.ai sends us a formatted message to return to  //
+// the space we are in, along with some meta-data about the result.          //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 var apiai = require("apiai");
 var request = require("request");
 var app = apiai(process.env.API_AI);
@@ -6,18 +14,18 @@ var app = apiai(process.env.API_AI);
 
 module.exports = {
 
-  talkBack: function talkBack(text, userName, token) {
-
+  talkBack: function talkBack(text, userName, token, url, space) {
     var firstName = userName.split(" ")[0];
     var firstL = firstName.substr(0, 1).toUpperCase();
     var rest = firstName.substr(1).toLowerCase();
     var name = firstL + rest;
 
-    //////Sending our text to be processed
+    // Send our text to be processed
     var apiai = app.textRequest(text, {
       sessionId: "Luke"
     });
-    //Response from process
+
+    // Response from process
     apiai.on('response', (response) => {
       const appMessage = {
         "type": "appMessage",
@@ -31,28 +39,33 @@ module.exports = {
           "color": "blue",
         }]
       };
-      
+
       const sendMessageOptions = {
-        "url": "https://api.watsonwork.ibm.com/v1/spaces/58c4c152e4b0a3f2c30975e5/messages",
+        "url": url + "/v1/spaces/" + space + "/messages",
         "headers": {
           "Content-Type": "application/json",
-          "jwt": JSON.parse(token.req.res.body)["access_token"]
+          "jwt": JSON.parse(token.req.res.body).access_token
         },
         "method": "POST",
         "body": ""
       };
-   
-      //console.log("Response results: " + JSON.stringify(response.result));
+
       appMessage.annotations[0].text = response.result.fulfillment.speech;
       sendMessageOptions.body = JSON.stringify(appMessage);
 
       request(sendMessageOptions, function(err, response, sendMessageBody) {
         if (err || response.statusCode !== 201) {
-          console.log("ERROR: Posting to " + sendMessageOptions.url + "resulted on http status code: " + response.statusCode + " and error " + err);
+          console.log("ERROR: Posting to " +
+              sendMessageOptions.url +
+              "resulted on http status code: " +
+              response.statusCode +
+              " and error " +
+              err);
         }
       });
 
-    }); /////End of apiai response request for basic talk back
+    });
+
     apiai.on('error', (error) => {
       console.log(error);
     });

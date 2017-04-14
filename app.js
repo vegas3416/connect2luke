@@ -1,10 +1,7 @@
 const express = require("express");
-var app = express();
 const request = require("request");
 const crypto = require("crypto");
-var bodyParser = require("body-parser");
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+const bodyParser = require("body-parser");
 
 var talk = require("./talkBack");
 var weather = require("./weather");
@@ -12,20 +9,27 @@ var lookUp = require("./google");
 var graph = require("./graph");
 var zendesk = require("./zendesk");
 
-var APP_ID = process.env.APP_ID;
-var APP_SECRET = process.env.APP_SECRET;
-
-var WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
 const SPACE_ID = "58c4c152e4b0a3f2c30975e5";
-
-
 const WWS_URL = "https://api.watsonwork.ibm.com";
 const AUTHORIZATION_API = "/oauth/token";
 const WEBHOOK_VERIFICATION_TOKEN_HEADER = "X-OUTBOUND-TOKEN".toLowerCase();
-const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
 
-// Global variable
+var APP_ID = process.env.APP_ID;
+var APP_SECRET = process.env.APP_SECRET;
+var WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+var PORT = process.env.PORT
+
+
+// Global variables
+var app = express();
 var sender = "";
+var privateKey = fs.readFileSync("cert.pem");
+var certificate = fs.readFileSync("cert.pem");
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+
 
 app.get("/", function(req, res) {
   res.send("Luke is alive!");
@@ -101,12 +105,15 @@ app.post('/api', function(req, res) {
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// Listener                                                                  //
+// Start the webserver                                                       //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-app.listen(process.env.PORT, process.env.IP, function() {
-  console.log("Started App");
-});
+https.createServer({
+  key: privateKey,
+  cert: certificate
+}, app).listen(PORT, function() {
+  console.log("Server started");
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

@@ -1,4 +1,6 @@
 var request = require("request");
+var ww = require("./lib/ww");
+
 const ZENDESK_URL = "https://ibmworkspace.zendesk.com/api/v2/search.json?query=";
 
 module.exports.handleTrigger = function (body, request, url, space, token) {
@@ -40,44 +42,12 @@ module.exports.handleTrigger = function (body, request, url, space, token) {
 
   console.log("\nZendesk trigger event became: " + msg);
 
-  const appMessage = {
-    "type": "appMessage",
-    "version": "1",
-    "annotations": [{
-      "type": "generic",
-      "version": "1",
-      "title": "",
-      "text": "",
-      "color": color,
-    }]
-  };
-  const sendMessageOptions = {
-    "url": WWS_URL + "/v1/spaces/" + SPACE_ID + "/messages",
-    "headers": {
-      "Content-Type": "application/json",
-      "jwt": JSON.parse(token.req.res.body)["access_token"]
-    },
-    "method": "POST",
-    "body": ""
-  };
+  ww.sendMessage(msg, color, url, space, token);
 
-  appMessage.annotations[0].text = msg;
-  sendMessageOptions.body = JSON.stringify(appMessage);
-
-  request(sendMessageOptions, function(err, response) {
-    if (err || response.statusCode !== 201) {
-      console.log("ERROR: Posting to " +
-          sendMessageOptions.url +
-          " resulted in http status code: " +
-          response.statusCode +
-          " and error " + err);
-    }
-  });
 }
 
 
-module.exports = {
-  zendesk: function zendeskOpen(body, res, sender) {
+module.exports.zendeskOpen = function (body, res, sender) {
     var type = '';
     var pick = '';
     var msg = ' ';
@@ -107,6 +77,7 @@ module.exports = {
       pick = 'user';
     }
 
+    // Create our request to the Zendesk API
     var options = {
       url: ZENDESK_URL + type,
       'auth': {
@@ -116,48 +87,64 @@ module.exports = {
       }
     };
 
-    function callback(error, response, body) {
-      if (error && response.statusCode != 200) {
-        console.log("Show yourself");
-        console.log(error);
+    request(options, function (err, res, body) {
+      if (err && res.statusCode != 200) {
+        console.log("Problem calling the Zendesk API:");
+        console.log(err);
+        return;
       }
-      else if (!error) {
-        var json = JSON.parse(body);
-      }
+
+      var data = JSON.parse(body);
       switch (pick) {
         case 'open':
-          for (var x = 0; x < json.results.length; x++) {
-            msg += "*ID: " + json.results[x].id + "* - " + json.results[x].subject + ' \n';
+          for (var x = 0; x < data.results.length; x++) {
+            msg += "*ID: " +
+              data.results[x].id +
+              "* - " +
+              data.results[x].subject +
+              ' \n';
           }
           break;
         case 'id':
-          if (json.count == 0) {
-            msg = "I'm sorry but that Id is invalid, may have been recently deleted, or aliens abducted it";
+          if (data.count == 0) {
+            msg = "I'm sorry but that ID is either invalid," +
+              " recently deleted, or abducted by aliens.";
           }
           else {
-            msg = "*ID: " + json.results[0].id + "* \n*Description:* " + json.results[0].description + "\n*Status:* " +
-            json.results[0].status + "\n*URL: *" + "https://ibmworkspace.zendesk.com/agent/tickets/" + json.results[0].id + "\n";
+            msg = "*ID: " +
+              data.results[0].id +
+              "* \n*Description:* " +
+              data.results[0].description +
+              "\n*Status:* " +
+              data.results[0].status +
+              "\n*URL: *" +
+              "https://ibmworkspace.zendesk.com/agent/tickets/" +
+              data.results[0].id +
+              "\n";
           }
           break;
         case 'key':
-          for (var x = 0; x < json.results.length; x++) {
-            if (json.results[x].subject) {
-              msg += "*ID: " + json.results[x].id + "*\n*Subject: *" + json.results[x].subject;
+          for (var x = 0; x < data.results.length; x++) {
+            if (data.results[x].subject) {
+              msg += "*ID: " +
+                data.results[x].id +
+                "*\n*Subject: *" +
+                data.results[x].subject;
             }
           }
           break;
         case 'user':
-          for (var x = 0; x < json.results.length; x++) {
-            if (json.results[x].subject) {
+          for (var x = 0; x < data.results.length; x++) {
+            if (data.results[x].subject) {
               msg += "*ID: *" +
-                json.results[x].id +
+                data.results[x].id +
                 "\n*Status: *" +
-                json.results[x].status +
+                data.results[x].status +
                 "\n*Subject: *" +
-                json.results[x].subject +
+                data.results[x].subject +
                 "\n*URL: *" +
                 "https://ibmworkspace.zendesk.com/agent/tickets/" +
-                json.results[x].id +
+                data.results[x].id +
                 "\n";
             }
           }
@@ -169,12 +156,11 @@ module.exports = {
         default:
           msg = errorMessage;
       }
-      return res.json({
+      res.json({
         speech: msg,
         displayText: msg,
         source: "Zendesk"
       });
     }
-  request(options, callback);
   }
 };

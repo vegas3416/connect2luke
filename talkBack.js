@@ -8,13 +8,12 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 var apiai = require("apiai");
-var request = require("request");
+const request = require("request");
+var ww = require("./lib/ww");
 var app = apiai(process.env.API_AI);
 
 
-module.exports = {
-
-  talkBack: function talkBack(text, userName, token, url, space) {
+module.exports.talkback = function (text, userName, token, url, space) {
     var firstName = userName.split(" ")[0];
     var firstL = firstName.substr(0, 1).toUpperCase();
     var rest = firstName.substr(1).toLowerCase();
@@ -27,43 +26,8 @@ module.exports = {
 
     // Response from process
     apiai.on('response', (response) => {
-      const appMessage = {
-        "type": "appMessage",
-        "version": "1",
-        "annotations": [{
-          "type": "generic",
-          "version": "1",
-
-          "title": "",
-          "text": "",
-          "color": "blue",
-        }]
-      };
-
-      const sendMessageOptions = {
-        "url": url + "/v1/spaces/" + space + "/messages",
-        "headers": {
-          "Content-Type": "application/json",
-          "jwt": JSON.parse(token.req.res.body).access_token
-        },
-        "method": "POST",
-        "body": ""
-      };
-
-      appMessage.annotations[0].text = response.result.fulfillment.speech;
-      sendMessageOptions.body = JSON.stringify(appMessage);
-
-      request(sendMessageOptions, function(err, response, sendMessageBody) {
-        if (err || response.statusCode !== 201) {
-          console.log("ERROR: Posting to " +
-              sendMessageOptions.url +
-              "resulted on http status code: " +
-              response.statusCode +
-              " and error " +
-              err);
-        }
-      });
-
+      msg = response.result.fulfillment.speech;
+      ww.sendMessage(msg, 'blue', url, space, token);
     });
 
     apiai.on('error', (error) => {

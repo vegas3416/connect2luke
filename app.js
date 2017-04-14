@@ -24,6 +24,7 @@ const AUTHORIZATION_API = "/oauth/token";
 const WEBHOOK_VERIFICATION_TOKEN_HEADER = "X-OUTBOUND-TOKEN".toLowerCase();
 const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
 
+// Global variable
 var sender = "";
 
 app.get("/", function(req, res) {
@@ -37,13 +38,12 @@ app.post("/webhook", function(req, res) {
   sender = body.userName;
 
 
-  // Only for Zendesk POST calls
-  // (didn't want to separate it all out into another JS file..YES I"M LAZY)
+  // Only for Zendesk trigger calls.
   if(zen)  {
-    console.log("Body before you get into zen: " + JSON.stringify(body));
+    console.log("Body from Zen POST: " + JSON.stringify(body));
     var msg = "";
     var color = "";
-
+    // New ticket was created
     if (body.create) {
       msg = body.id + 
             "\n" +
@@ -59,6 +59,7 @@ app.post("/webhook", function(req, res) {
         color = 'red';
       }
     }
+    // Existing ticket was updated
     else if (body.update) {
       console.log("I got into update");
       msg = body.id +
@@ -76,8 +77,7 @@ app.post("/webhook", function(req, res) {
     }
 
 
-    console.log("This the color that got assigned: " + color);
-    console.log("\nThis is what msg has in it: " + msg);
+    console.log("\nZendesk trigger event became: " + msg);
 
     const appMessage = {
       "type": "appMessage",
@@ -103,11 +103,11 @@ app.post("/webhook", function(req, res) {
     appMessage.annotations[0].text = msg;
     sendMessageOptions.body = JSON.stringify(appMessage);
 
-    request(sendMessageOptions, function(err, response, sendMessageBody) {
+    request(sendMessageOptions, function(err, response) {
       if (err || response.statusCode !== 201) {
         console.log("ERROR: Posting to " +
             sendMessageOptions.url +
-            "resulted on http status code: " +
+            " resulted in http status code: " +
             response.statusCode +
             " and error " + err);
       }
@@ -148,6 +148,8 @@ app.post("/webhook", function(req, res) {
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
+// This handles callbacks from API.ai.                                       //
+//                                                                           //
 // Trying out this weather API here:                                         //
 // http://www.girliemac.com/blog/2017/01/06/facebook-apiai-bot-nodejs/       //
 //                                                                           //
@@ -156,13 +158,15 @@ app.post('/api', function(req, res) {
   var body = req.body;
   console.log("In api post");
   if (body.result.action === 'weather' || body.result.action === 'forecast'){
+      console.log("Action: Weather");
       weather.weather(body,res);
   }
   else if(body.result.action === 'google'){
+      console.log("Action: Google");
       lookUp.lookUp(body,res);
   }
   else if(body.result.action === 'zendesk'){
-      console.log("See Zendesk as my action");
+      console.log("Action: Zendesk");
       zendesk.zendesk(body,res, sender);
   }
 });
@@ -200,7 +204,6 @@ function verifyWorkspace(response, challenge) {
     .update(responseBodyString)
     // ending up with the hex formatted hash.
     .digest("hex");
-  console.log("before hash");
   // Write our response headers
   response.writeHead(200, {
     "Content-Type": "application/json; charset=utf-8",
@@ -209,7 +212,7 @@ function verifyWorkspace(response, challenge) {
 
   // Add our body and send it off.
   response.end(responseBodyString);
-  console.log("All hashed up");
+  console.log("Webhook was verified");
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -230,6 +233,6 @@ var token = request({
 }, function(err, res) {
 
   if (!err == 200) {
-    console.log("Crap, not good!!", err);
+    console.log("Failed to obtain Oauth token", err);
   }
 });

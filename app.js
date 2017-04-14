@@ -57,19 +57,19 @@ app.post("/webhook", function(req, res) {
 
   // Message created event
   if (eventType === "message-created") {
-    var message = body["content"].toLowerCase();
+    var text = body.content.toLowerCase();
 
     // Ignore our own messages
     if (body.userId === APP_ID) {
       return;
     }
     // Handle if we were mentioned
-    else if (message.indexOf('luke') > -1) {
+    else if (text.indexOf('luke') > -1) {
       console.log("We were mentioned in a message");
-      talk.talkBack(body.content, body.userName, token, WWS_URL, SPACE_ID);
+      talk.talkBack(body, token, WWS_URL, SPACE_ID);
     }
     // To be implemented
-    else if(message.indexOf('!graphit') > -1){
+    else if(text.indexOf('!graphit') > -1){
       console.log("Got shortcut 'graphit' in a message");
       graph.graphit(body,res);
     }

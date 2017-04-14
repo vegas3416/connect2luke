@@ -9,7 +9,7 @@ module.exports.handleTrigger = function (body, request, url, space, token) {
   var color = "";
   // New ticket was created
   if (body.create) {
-    msg = body.id + 
+    msg = body.id +
           "\n" +
           body.title +
           "\n*URL: *" +
@@ -54,13 +54,12 @@ module.exports.callZendesk = function (type, callback) {
       'pass': process.env.Z_TOKEN,
       'Accept': "application/json"
     }
-    request(options, function (err, res, body) {
-      if (err) {
-        callback(err, null);
-      }
-      else {
-        callback(null, JSON.parse(body));
-      }
-    };
-  }
+  };
+  request(options, function (err, res, body) {
+    if (err) {
+      callback(err, null);
+    } else {
+      callback(null, JSON.parse(body));
+    }
+  });
 }

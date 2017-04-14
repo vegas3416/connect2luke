@@ -2,6 +2,8 @@ const express = require("express");
 const request = require("request");
 const crypto = require("crypto");
 const bodyParser = require("body-parser");
+const fs = require("fs");
+const https = require("https");
 
 var talk = require("./talkBack");
 var weather = require("./weather");

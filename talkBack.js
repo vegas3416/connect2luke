@@ -11,7 +11,7 @@ var ww = require("./lib/ww");
 
 
 module.exports.talkback = function (data, token, url, space) {
-  var msg_id = data..messageId;
+  var msg_id = data.messageId;
   var body = "{ message (id: \"" + msg_id + ")" +
     "{ createdBy { displayName id }" +
     " created content contentType annotations } }";
@@ -26,7 +26,7 @@ module.exports.talkback = function (data, token, url, space) {
     var data = res.data.message;
     var WKeywords = [];
     var annotation_length = data.annotations.length;
-    for (var i = 0, i < annotation_length, i++) {
+    for (var i = 0; i < annotation_length; i++) {
       var note = JSON.parse(data.annotations[i]);
       if (note.type === "message-nlp-keywords") {
         WKeywords = note.keywords;
@@ -59,7 +59,7 @@ module.exports.talkback = function (data, token, url, space) {
             "https://ibmworkspace.zendesk.com/agent/tickets/" +
             res.results[0].id + "\n";
         }
-      }
+      });
     } else if (message.search("my") && message.search("tickets")) {
       zendesk.callZendesk('"' + sender + '"', function (err, res) {
         if (err) {
@@ -77,7 +77,7 @@ module.exports.talkback = function (data, token, url, space) {
               res.results[x].id + "\n";
           }
         }
-      }
+      });
     } else if (message.search("open") && message.search("tickets")) {
       zendesk.callZendesk('type:ticket status:open', function (err, res) {
         if (err) {
@@ -92,11 +92,12 @@ module.exports.talkback = function (data, token, url, space) {
             res.results[x].subject +
             ' \n';
         }
-      }
+      });
     } else {
       msg = help();
     }
     ww.sendMessage(msg, '#016F4A', url, space, token);
+  });
 }
 
 function decode_utf8(s) {

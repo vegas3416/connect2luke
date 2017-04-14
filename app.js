@@ -113,7 +113,7 @@ https.createServer({
   cert: certificate
 }, app).listen(PORT, function() {
   console.log("Server started");
-};
+});
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

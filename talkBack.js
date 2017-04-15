@@ -68,6 +68,7 @@ module.exports.talkback = function (data, token, url, space) {
             "https://ibmworkspace.zendesk.com/agent/tickets/" +
             res.results[0].id + "\n";
         }
+        ww.sendMessage(msg, '#016F4A', url, space, token);
       });
     } else if (message.search("my") && message.search("tickets")) {
       console.log("A user requested their tickets");
@@ -90,7 +91,7 @@ module.exports.talkback = function (data, token, url, space) {
               res.results[x].id + "\n";
           }
         }
-        console.log("Prepared message for space is: " + msg);
+        ww.sendMessage(msg, '#016F4A', url, space, token);
       });
     } else if (message.search("open") && message.search("tickets")) {
       zendesk.callZendesk('type:ticket status:open', function (err, res) {
@@ -106,11 +107,12 @@ module.exports.talkback = function (data, token, url, space) {
             res.results[x].subject +
             ' \n';
         }
+        ww.sendMessage(msg, '#016F4A', url, space, token);
       });
     } else {
       msg = help();
+      ww.sendMessage(msg, '#016F4A', url, space, token);
     }
-    ww.sendMessage(msg, '#016F4A', url, space, token);
   });
 }
 

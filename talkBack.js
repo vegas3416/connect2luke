@@ -139,7 +139,7 @@ module.exports.talkback = function (data, token, url, space) {
           msg += "*ID: " +
             res.results[x].id +
             "* - " +
-            res.results[x].subject;
+            res.results[x].subject + "\n";
         }
         ww.sendMessage(msg, '#016F4A', url, space, token);
         // We need to check next page

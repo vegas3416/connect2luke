@@ -67,7 +67,7 @@ module.exports.talkback = function (data, token, url, space) {
           var status = res.results[0].status;
           var description = res.results[0].description;
           // Make another call to grab the comments
-          var query = "tickets/" + ID + "/comments.jsoni?sort_order=desc";
+          var query = "tickets/" + ID + "/comments.json?sort_order=desc";
           zendesk.callZendesk(query, function (err, res) {
             comment = "";
             if (!err) {
@@ -79,7 +79,7 @@ module.exports.talkback = function (data, token, url, space) {
             msg = "[*ID: " + id + "*](" +
               "https://ibmworkspace.zendesk.com/agent/tickets/" +
               id + ") (_" + status +
-              "\n*Description:* " +
+              "_)\n*Description:* " +
               description + "\n";
             if (comment) {
               msg += "*Last update:* " + comment;

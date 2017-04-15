@@ -81,7 +81,7 @@ module.exports.talkback = function (data, token, url, space) {
           console.log(err);
           return;
         }
-        for (var x = 0; x < res.results.length; x++) {
+        for (var x = 1; x < res.results.length; x++) {
           var status = res.results[x].status;
           if (status !== "closed" && status !== "solved") {
             msg += "*" + res.results[x].id + "*" +

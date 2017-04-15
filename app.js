@@ -125,7 +125,7 @@ https.createServer({
       console.log("Failed to retrieve users from Zendesk");
     }
     for (var i = 0; i < res.users.length; i++) {
-      user_db.res.users[i].id = res.users[i].name;
+      user_db[res.users[i].id] = res.users[i].name;
     }
   });
 });

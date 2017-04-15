@@ -138,7 +138,7 @@ module.exports.talkback = function (data, token, url, space, user_db) {
             res.results[x].subject + "](" +
             "https://ibmworkspace.zendesk.com/agent/tickets/" +
             res.results[x].id + ")" + " - assigned to " +
-            user_db.res.results[x].assignee_id + "\n";
+            user_db[res.results[x].assignee_id] + "\n";
         }
         ww.sendMessage(msg.slice(0,-1), '#016F4A', url, space, token);
         // We need to check next page

@@ -12,7 +12,7 @@ var graph = require("./graph");
 var zendesk = require("./zendesk");
 
 const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
-const SPACE_ID = "58c4c152e4b0a3f2c30975e5";
+const SPACE_ID = "58f14f69e4b0418710518e55";
 const WWS_URL = "https://api.watsonwork.ibm.com";
 const AUTHORIZATION_API = "/oauth/token";
 const WEBHOOK_VERIFICATION_TOKEN_HEADER = "X-OUTBOUND-TOKEN".toLowerCase();
@@ -26,7 +26,7 @@ var PORT = process.env.PORT
 // Global variables
 var app = express();
 var sender = "";
-var privateKey = fs.readFileSync("cert.pem");
+var privateKey = fs.readFileSync("key.pem");
 var certificate = fs.readFileSync("cert.pem");
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -34,10 +34,12 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 
 app.get("/", function(req, res) {
+  console.log("Received GET to /");
   res.send("Luke is alive!");
 });
 
 app.post("/webhook", function(req, res) {
+  console.log("Received POST to /webhook");
   var body = req.body;
   var eventType = body.type;
   var zen = body.zen;
@@ -51,6 +53,7 @@ app.post("/webhook", function(req, res) {
 
   // Verification event
   if (eventType === "verification") {
+    console.log("Verifying...");
     verifyWorkspace(res, body.challenge);
     return;
   }
@@ -68,7 +71,7 @@ app.post("/webhook", function(req, res) {
     // Handle if we were mentioned
     else if (text.indexOf('luke') > -1) {
       console.log("We were mentioned in a message");
-      talk.talkBack(body, token, WWS_URL, SPACE_ID);
+      talk.talkback(body, token, WWS_URL, SPACE_ID);
     }
     // To be implemented
     else if(text.indexOf('!graphit') > -1){
@@ -114,7 +117,7 @@ https.createServer({
   key: privateKey,
   cert: certificate
 }, app).listen(PORT, function() {
-  console.log("Server started");
+  console.log("Server started on port " + PORT);
 });
 
 ///////////////////////////////////////////////////////////////////////////////

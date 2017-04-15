@@ -62,6 +62,9 @@ module.exports.talkback = function (data, token, url, space) {
             "the ticket has been abducted by aliens.";
         }
         else {
+          var id = res.results[0].id;
+          var status = res.results[0].status;
+          var description = res.results[0].description;
           // Make another call to grab the comments
           zendesk.callZendesk(ID + '/comments.json', function (err, res) {
             if (!err) {
@@ -72,11 +75,11 @@ module.exports.talkback = function (data, token, url, space) {
               comment = "";
             }
 
-            msg = "[*ID: " + res.results[0].id + "*](" +
+            msg = "[*ID: " + id + "*](" +
               "https://ibmworkspace.zendesk.com/agent/tickets/" +
-              res.results[0].id + ") (_" + res.results[0].status +
+              id + ") (_" + status +
               "\n*Description:* " +
-              res.results[0].description + "\n";
+              description + "\n";
             if (comment) {
               msg += "*Last update:* " + comment;
             }

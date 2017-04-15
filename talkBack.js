@@ -120,10 +120,10 @@ module.exports.talkback = function (data, token, url, space) {
               "[" + res.results[x].subject + "](" +
               "https://ibmworkspace.zendesk.com/agent/tickets/" +
               res.results[x].id + ") (_" + res.results[x].status +
-              "_)";
+              "_)\n";
           }
         }
-        ww.sendMessage(msg, '#016F4A', url, space, token);
+        ww.sendMessage(msg.slice(0,-1), '#016F4A', url, space, token);
       });
     } else if (message.includes("open") && message.includes("tickets")) {
       var query = "search.json?query=type:ticket status:open";
@@ -141,7 +141,7 @@ module.exports.talkback = function (data, token, url, space) {
             "* - " +
             res.results[x].subject + "\n";
         }
-        ww.sendMessage(msg.slice(0,-2), '#016F4A', url, space, token);
+        ww.sendMessage(msg.slice(0,-1), '#016F4A', url, space, token);
         // We need to check next page
         if (res.next_page) {
           next_page = res.next_page;
@@ -174,7 +174,7 @@ module.exports.talkback = function (data, token, url, space) {
               data.results[x].subject +
               ' \n';
           }
-          ww.sendMessage(msg, '#016F4A', url, space, token);
+          ww.sendMessage(msg.slice(0,-1), '#016F4A', url, space, token);
           if (data.next_page) {
             next_page = data.next_page;
             msg = "Some results omitted. Ask for the next page if desired.";

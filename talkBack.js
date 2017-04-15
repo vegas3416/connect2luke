@@ -67,12 +67,12 @@ module.exports.talkback = function (data, token, url, space) {
           var status = res.results[0].status;
           var description = res.results[0].description;
           // Make another call to grab the comments
-          var query = "tickets/" + ID + "/comments.json";
+          var query = "tickets/" + ID + "/comments.jsoni?sort_order=desc";
           zendesk.callZendesk(query, function (err, res) {
             comment = "";
             if (!err) {
               if (res.comments) {
-                comment = res.comments[0].value;
+                comment = res.comments[0].body;
               }
             }
 

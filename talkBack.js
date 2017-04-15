@@ -82,9 +82,9 @@ module.exports.talkback = function (data, token, url, space) {
             if (comment) {
               msg += "*Last update:* " + comment;
             }
+            ww.sendMessage(msg, '#016F4A', url, space, token);
           });
         }
-        ww.sendMessage(msg, '#016F4A', url, space, token);
       });
     } else if (message.search("my") && message.search("tickets")) {
       console.log("A user requested their tickets");

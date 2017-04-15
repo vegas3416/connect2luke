@@ -76,28 +76,21 @@ module.exports.talkback = function (data, token, url, space, user_db) {
               if (res.comments) {
                 comment = res.comments[0].body;
                 author_id = res.comments[0].author_id;
+                author = user_db[author_id];
               }
             }
-            // Make yet another call to translate author id into a name
-            query = "users/" + author_id + ".json";
-            zendesk.callZendesk(query, function (err, res) {
-              author = "";
-              if (!err) {
-                author = res.user.name;
+            msg = "[*ID: " + id + "*](" +
+              "https://ibmworkspace.zendesk.com/agent/tickets/" +
+              id + ") (_" + status +
+              "_)\n*Description:* " +
+              description + "\n";
+            if (comment) {
+              msg += "*Last update:* " + comment;
+              if (author) {
+                msg += " - _" + author + "_";
               }
-              msg = "[*ID: " + id + "*](" +
-                "https://ibmworkspace.zendesk.com/agent/tickets/" +
-                id + ") (_" + status +
-                "_)\n*Description:* " +
-                description + "\n";
-              if (comment) {
-                msg += "*Last update:* " + comment;
-                if (author) {
-                  msg += " - _" + author + "_";
-                }
-              }
-              ww.sendMessage(msg, '#016F4A', url, space, token);
-            });
+            }
+            ww.sendMessage(msg, '#016F4A', url, space, token);
           });
         }
       });

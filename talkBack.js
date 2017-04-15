@@ -37,7 +37,9 @@ module.exports.talkback = function (data, token, url, space) {
     // The message text is UTF-8, so we need to first decode it to be safe.
     var message = decode_utf8(data.content);
     var re = /[0-9]+/;
-    var ID = message.match(re)[0];
+    if (message.match(re)) {
+      var ID = message.match(re)[0];
+    }
 
     // "Luke, show me my tickets"
     // "Give me more information on ticket 56 Luke"

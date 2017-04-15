@@ -49,7 +49,8 @@ module.exports.talkback = function (data, token, url, space) {
     // "Give me more information on ticket 56 Luke"
     // "What tickets are open right now Luke"
     if (ID && (message.search("details") || message.search("information"))) {
-      zendesk.callZendesk(ID, function (err, res) {
+      var query = "search.json?query=" + ID;
+      zendesk.callZendesk(query, function (err, res) {
         if (err) {
           console.log("Problem calling the Zendesk API");
           console.log(err);
@@ -66,7 +67,8 @@ module.exports.talkback = function (data, token, url, space) {
           var status = res.results[0].status;
           var description = res.results[0].description;
           // Make another call to grab the comments
-          zendesk.callZendesk(ID + '/comments.json', function (err, res) {
+          var query = "tickets/" + ID + "/comments.json";
+          zendesk.callZendesk(query, function (err, res) {
             comment = "";
             if (!err) {
               if (res.comments) {
@@ -91,7 +93,8 @@ module.exports.talkback = function (data, token, url, space) {
       // Who asked?
       var sender = data.createdBy.displayName;
       console.log("Looks like " + sender + " was the requesting party");
-      zendesk.callZendesk('"' + sender + '"', function (err, res) {
+      var query = "search.json?query=" + '"' + sender + '"';
+      zendesk.callZendesk(query, function (err, res) {
         if (err) {
           console.log("Problem calling the Zendesk API");
           console.log(err);
@@ -110,7 +113,8 @@ module.exports.talkback = function (data, token, url, space) {
         ww.sendMessage(msg, '#016F4A', url, space, token);
       });
     } else if (message.search("open") && message.search("tickets")) {
-      zendesk.callZendesk('type:ticket status:open', function (err, res) {
+      var query = "search.json?query=type:ticket status:open";
+      zendesk.callZendesk(query, function (err, res) {
         if (err) {
           console.log("Problem calling the Zendesk API");
           console.log(err);

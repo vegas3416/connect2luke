@@ -1,7 +1,7 @@
 var request = require("request");
 var ww = require("./lib/ww");
 
-const ZENDESK_URL = "https://ibmworkspace.zendesk.com/api/v2/search.json?query=";
+const ZENDESK_URL = "https://ibmworkspace.zendesk.com/api/v2/";
 
 module.exports.handleTrigger = function (body, request, url, space, token) {
   console.log("Body from Zen POST: " + JSON.stringify(body));

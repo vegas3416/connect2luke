@@ -50,7 +50,7 @@ module.exports.talkback = function (data, token, url, space) {
     // "Luke, show me my tickets"
     // "Give me more information on ticket 56 Luke"
     // "What tickets are open right now Luke"
-    if (ID && (message.search("details") || message.search("information"))) {
+    if (ID && (message.includes("details") || message.includes("information"))) {
       var query = "search.json?query=" + ID;
       zendesk.callZendesk(query, function (err, res) {
         if (err) {
@@ -101,7 +101,7 @@ module.exports.talkback = function (data, token, url, space) {
           });
         }
       });
-    } else if (message.search("my") && message.search("tickets")) {
+    } else if (message.includes("my") && message.includes("tickets")) {
       console.log("A user requested their tickets");
       // Who asked?
       var sender = data.createdBy.displayName;
@@ -120,12 +120,12 @@ module.exports.talkback = function (data, token, url, space) {
               "[" + res.results[x].subject + "](" +
               "https://ibmworkspace.zendesk.com/agent/tickets/" +
               res.results[x].id + ") (_" + res.results[x].status +
-              "_)\n";
+              "_)";
           }
         }
         ww.sendMessage(msg, '#016F4A', url, space, token);
       });
-    } else if (message.search("open") && message.search("tickets")) {
+    } else if (message.includes("open") && message.includes("tickets")) {
       var query = "search.json?query=type:ticket status:open";
       zendesk.callZendesk(query, function (err, res) {
         if (err) {

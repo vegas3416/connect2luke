@@ -84,7 +84,7 @@ module.exports.talkback = function (data, token, url, space) {
         for (var x = 1; x < res.results.length; x++) {
           var status = res.results[x].status;
           if (status !== "closed" && status !== "solved") {
-            msg += "*" + res.results[x].id + "*" +
+            msg += "*[Ticket " + res.results[x].id + "*] " +
               "[" + res.results[x].subject + "](" +
               "https://ibmworkspace.zendesk.com/agent/tickets/" +
               res.results[x].id + ") (_" + res.results[x].status +

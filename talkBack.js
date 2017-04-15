@@ -116,7 +116,7 @@ module.exports.talkback = function (data, token, url, space) {
         for (var x = 1; x < res.results.length; x++) {
           var status = res.results[x].status;
           if (status !== "closed" && status !== "solved") {
-            msg += "*[Ticket " + res.results[x].id + "*] " +
+            msg += "*[" + res.results[x].id + "*] " +
               "[" + res.results[x].subject + "](" +
               "https://ibmworkspace.zendesk.com/agent/tickets/" +
               res.results[x].id + ") (_" + res.results[x].status +
@@ -136,9 +136,7 @@ module.exports.talkback = function (data, token, url, space) {
         console.log("Number of results was: " + res.count);
         console.log("Next page is: " + res.next_page);
         for (var x = 0; x < res.results.length; x++) {
-          msg += "*ID: " +
-            res.results[x].id +
-            "* - " +
+          msg += "*[" + res.results[x].id + "]* - " +
             res.results[x].subject + "\n";
         }
         ww.sendMessage(msg.slice(0,-1), '#016F4A', url, space, token);

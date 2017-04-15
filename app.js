@@ -3,6 +3,7 @@ const request = require("request");
 const crypto = require("crypto");
 const bodyParser = require("body-parser");
 const fs = require("fs");
+const http = require("http");
 const https = require("https");
 
 var talk = require("./talkBack");
@@ -114,21 +115,36 @@ app.post('/api', function(req, res) {
 // Start the webserver                                                       //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-https.createServer({
-  key: privateKey,
-  cert: certificate
-}, app).listen(PORT, function() {
-  console.log("Server started on port " + PORT);
-  query = "users.json";
-  zendesk.callZendesk(query, function (err, res) {
-    if (err) {
-      console.log("Failed to retrieve users from Zendesk");
-    }
-    for (var i = 0; i < res.users.length; i++) {
-      user_db[res.users[i].id] = res.users[i].name;
-    }
+if (BLUEMIX) {
+  http.createServer(app).listen(PORT, function (err, res) {
+    console.log("Bluemix server started on port " + PORT);
+    query = "users.json";
+    zendesk.callZendesk(query, function (err, res) {
+      if (err) {
+        console.log("Failed to retrieve users from Zendesk");
+      }
+      for (var i = 0; i < res.users.length; i++) {
+        user_db[res.users[i].id] = res.users[i].name;
+      }
+    });
   });
-});
+} else {
+  https.createServer({
+    key: privateKey,
+    cert: certificate
+  }, app).listen(PORT, function (err, res) {
+    console.log("Server started on port " + PORT);
+    query = "users.json";
+    zendesk.callZendesk(query, function (err, res) {
+      if (err) {
+        console.log("Failed to retrieve users from Zendesk");
+      }
+      for (var i = 0; i < res.users.length; i++) {
+        user_db[res.users[i].id] = res.users[i].name;
+      }
+    });
+  });
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //

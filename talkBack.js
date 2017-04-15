@@ -141,7 +141,7 @@ module.exports.talkback = function (data, token, url, space) {
             "* - " +
             res.results[x].subject + "\n";
         }
-        ww.sendMessage(msg, '#016F4A', url, space, token);
+        ww.sendMessage(msg.slice(0,-2), '#016F4A', url, space, token);
         // We need to check next page
         if (res.next_page) {
           next_page = res.next_page;

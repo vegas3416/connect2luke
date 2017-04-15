@@ -28,6 +28,7 @@ var app = express();
 var sender = "";
 var privateKey = fs.readFileSync("key.pem");
 var certificate = fs.readFileSync("cert.pem");
+var user_db = {};
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -71,7 +72,7 @@ app.post("/webhook", function(req, res) {
     // Handle if we were mentioned
     else if (text.indexOf('luke') > -1) {
       console.log("We were mentioned in a message");
-      talk.talkback(body, token, WWS_URL, SPACE_ID);
+      talk.talkback(body, token, WWS_URL, SPACE_ID, user_db);
     }
     // To be implemented
     else if(text.indexOf('!graphit') > -1){
@@ -118,6 +119,15 @@ https.createServer({
   cert: certificate
 }, app).listen(PORT, function() {
   console.log("Server started on port " + PORT);
+  query = "users.json";
+  zendesk.callZendesk(query, function (err, res) {
+    if (err) {
+      console.log("Failed to retrieve users from Zendesk");
+    }
+    for (var i = 0; i < res.users.length; i++) {
+      user_db.res.users[i].id = res.users[i].name;
+    }
+  });
 });
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -29,6 +29,8 @@ module.exports.talkback = function (data, token, url, space) {
     var data = res.data.message;
     var WKeywords = [];
     var annotation_length = data.annotations.length;
+    var msg = "";
+
     for (var i = 0; i < annotation_length; i++) {
       var note = JSON.parse(data.annotations[i]);
       if (note.type === "message-nlp-keywords") {

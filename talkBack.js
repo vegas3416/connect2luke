@@ -14,7 +14,7 @@ module.exports.talkback = function (data, token, url, space) {
   console.log("Entered talkBack.talkback");
   console.log("Provided data is " + data);
   var msg_id = data.messageId;
-  var body = "{ message (id: \"" + msg_id + ")" +
+  var body = "{ message (id: \"" + msg_id + "\")" +
     "{ createdBy { displayName id }" +
     " created content contentType annotations } }";
   ww.makeGraphQLCall(body, token, url, function (err, res) {

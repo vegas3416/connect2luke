@@ -91,7 +91,7 @@ module.exports.talkback = function (data, token, url, space) {
               if (comment) {
                 msg += "*Last update:* " + comment;
                 if (author) {
-                  msg += " - " + author;
+                  msg += " - _" + author + "_";
                 }
               }
               ww.sendMessage(msg, '#016F4A', url, space, token);

@@ -7,6 +7,7 @@
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 const request = require("request");
+var zendesk = require("./zendesk");
 var ww = require("./lib/ww");
 
 

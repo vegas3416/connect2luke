@@ -11,6 +11,8 @@ var ww = require("./lib/ww");
 
 
 module.exports.talkback = function (data, token, url, space) {
+  console.log("Entered talkBack.talkback");
+  console.log("Provided data is " + data);
   var msg_id = data.messageId;
   var body = "{ message (id: \"" + msg_id + ")" +
     "{ createdBy { displayName id }" +

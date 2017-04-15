@@ -52,7 +52,7 @@ module.exports.talkback = function (data, token, url, space) {
           console.log(err);
           return;
         }
-        if (res.count == 0) {
+        if (res.count === 0) {
           msg = "I'm sorry but either that ticket number is invalid," +
             " the ticket has recently been deleted, or " +
             "the ticket has been abducted by aliens.";
@@ -101,6 +101,9 @@ module.exports.talkback = function (data, token, url, space) {
         }
       });
     } else {
+      msg = help();
+    }
+    if (!msg) {
       msg = help();
     }
     ww.sendMessage(msg, '#016F4A', url, space, token);

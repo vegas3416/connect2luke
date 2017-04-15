@@ -66,6 +66,8 @@ module.exports.talkback = function (data, token, url, space) {
         }
       });
     } else if (message.search("my") && message.search("tickets")) {
+      // Who asked?
+      var sender = data.createdBy.displayName;
       zendesk.callZendesk('"' + sender + '"', function (err, res) {
         if (err) {
           console.log("Problem calling the Zendesk API");

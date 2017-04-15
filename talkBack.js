@@ -90,6 +90,7 @@ module.exports.talkback = function (data, token, url, space) {
               res.results[x].id + "\n";
           }
         }
+        console.log("Prepared message for space is: " + msg);
       });
     } else if (message.search("open") && message.search("tickets")) {
       zendesk.callZendesk('type:ticket status:open', function (err, res) {
@@ -107,9 +108,6 @@ module.exports.talkback = function (data, token, url, space) {
         }
       });
     } else {
-      msg = help();
-    }
-    if (!msg) {
       msg = help();
     }
     ww.sendMessage(msg, '#016F4A', url, space, token);

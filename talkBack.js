@@ -84,12 +84,11 @@ module.exports.talkback = function (data, token, url, space) {
         for (var x = 0; x < res.results.length; x++) {
           var status = res.results[x].status;
           if (status !== "closed" && status !== "solved") {
-            msg += "*ID: *" + res.results[x].id +
-              "\n*Status: *" + res.results[x].status +
-              "\n*Subject: *" + res.results[x].subject +
-              "\n*URL: *" +
+            msg += "*" + res.results[x].id + "*" +
+              "[" + res.results[x].subject + "](" +
               "https://ibmworkspace.zendesk.com/agent/tickets/" +
-              res.results[x].id + "\n";
+              res.results[x].id + ") (_" + res.results[x].status +
+              "_)\n";
           }
         }
         ww.sendMessage(msg, '#016F4A', url, space, token);

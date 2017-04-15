@@ -13,7 +13,7 @@ var ww = require("./lib/ww");
 var next_page = "";
 
 
-module.exports.talkback = function (data, token, url, space) {
+module.exports.talkback = function (data, token, url, space, user_db) {
   console.log("Entered talkBack.talkback");
   console.log("Provided data is " + data);
   var msg_id = data.messageId;
@@ -133,13 +133,12 @@ module.exports.talkback = function (data, token, url, space) {
           console.log(err);
           return;
         }
-        console.log("Number of results was: " + res.count);
-        console.log("Next page is: " + res.next_page);
         for (var x = 0; x < res.results.length; x++) {
           msg += "*[" + res.results[x].id + "]* - [" +
             res.results[x].subject + "](" +
             "https://ibmworkspace.zendesk.com/agent/tickets/" +
-            res.results[x].id + ")\n";
+            res.results[x].id + ")" + " - assigned to " +
+            user_db.res.results[x].assignee_id + "\n";
         }
         ww.sendMessage(msg.slice(0,-1), '#016F4A', url, space, token);
         // We need to check next page

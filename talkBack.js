@@ -20,7 +20,6 @@ module.exports.talkback = function (data, token, url, space) {
     " created content contentType annotations } }";
   ww.makeGraphQLCall(body, token, url, function (err, res) {
     if (err) {
-      console.log("GraphQL call failed");
       return;
     }
 
@@ -37,11 +36,13 @@ module.exports.talkback = function (data, token, url, space) {
         WKeywords = note.keywords;
       }
     }
+    console.log("Alchemy keywords are: " + WKeywords.toString());
     // The message text is UTF-8, so we need to first decode it to be safe.
     var message = decode_utf8(data.content);
     var re = /[0-9]+/;
     if (message.match(re)) {
       var ID = message.match(re)[0];
+      console.log("Extracted ticket number " + ID);
     }
 
     // "Luke, show me my tickets"
@@ -54,6 +55,7 @@ module.exports.talkback = function (data, token, url, space) {
           console.log(err);
           return;
         }
+        console.log("Information about a specific ticket was requested");
         if (res.count === 0) {
           msg = "I'm sorry but either that ticket number is invalid," +
             " the ticket has recently been deleted, or " +
@@ -68,8 +70,10 @@ module.exports.talkback = function (data, token, url, space) {
         }
       });
     } else if (message.search("my") && message.search("tickets")) {
+      console.log("A user requested their tickets");
       // Who asked?
       var sender = data.createdBy.displayName;
+      console.log("Looks like " + sender + " was the requesting party");
       zendesk.callZendesk('"' + sender + '"', function (err, res) {
         if (err) {
           console.log("Problem calling the Zendesk API");

@@ -55,10 +55,12 @@ module.exports.callZendesk = function (type, callback) {
       'Accept': "application/json"
     }
   };
+  console.log("Performing Zendesk API call with " + JSON.stringify(options));
   request(options, function (err, res, body) {
     if (err) {
       callback(err, null);
     } else {
+      console.log("Zendesk API call succeeded, with result: " + body);
       callback(null, JSON.parse(body));
     }
   });

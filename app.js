@@ -22,6 +22,7 @@ var APP_ID = process.env.APP_ID;
 var APP_SECRET = process.env.APP_SECRET;
 var WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
 var PORT = process.env.PORT
+var BLUEMIX = process.env.BLUEMIX;
 
 
 // Global variables

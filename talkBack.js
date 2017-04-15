@@ -10,6 +10,8 @@ const request = require("request");
 var zendesk = require("./zendesk");
 var ww = require("./lib/ww");
 
+var next_page = "";
+
 
 module.exports.talkback = function (data, token, url, space) {
   console.log("Entered talkBack.talkback");
@@ -131,6 +133,8 @@ module.exports.talkback = function (data, token, url, space) {
           console.log(err);
           return;
         }
+        console.log("Number of results was: " + res.count);
+        console.log("Next page is: " + res.next_page);
         for (var x = 0; x < res.results.length; x++) {
           msg += "*ID: " +
             res.results[x].id +
@@ -139,7 +143,45 @@ module.exports.talkback = function (data, token, url, space) {
             ' \n';
         }
         ww.sendMessage(msg, '#016F4A', url, space, token);
+        // We need to check next page
+        if (res.next_page) {
+          next_page = res.next_page;
+          msg = "Some results omitted. Ask for the next page if desired.";
+          ww.sendMessage(msg, '#016F4A', url, space, token);
+        }
       });
+    } else if (message.search("next") && message.search("page")) {
+      if (next_page) {
+        var options = {
+          url: next_page,
+          'auth': {
+            'user': process.env.Z_USER,
+            'pass': process.env.Z_TOKEN,
+            'Accept': "application/json"
+          }
+        };
+        console.log("Performing Zendesk API call with " + JSON.stringify(options));
+        request(options, function (err, res, body) {
+          if (err) {
+            console.log("Failed to retrieve next page");
+            return;
+          }
+          data = JSON.parse(body);
+          console.log("Next page retrieved");
+          for (var x = 0; x < data.results.length; x++) {
+            msg += "*ID: " +
+              data.results[x].id +
+              "* - " +
+              data.results[x].subject +
+              ' \n';
+          }
+          ww.sendMessage(msg, '#016F4A', url, space, token);
+          if (data.next_page) {
+            next_page = data.next_page;
+            msg = "Some results omitted. Ask for the next page if desired.";
+            ww.sendMessage(msg, '#016F4A', url, space, token);
+          }
+        });
     } else {
       msg = help();
       ww.sendMessage(msg, '#016F4A', url, space, token);

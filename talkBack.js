@@ -62,11 +62,25 @@ module.exports.talkback = function (data, token, url, space) {
             "the ticket has been abducted by aliens.";
         }
         else {
-          msg = "*ID: " + res.results[0].id + "* \n*Description:* " +
-            res.results[0].description + "\n*Status:* " +
-            res.results[0].status + "\n*URL: *" +
-            "https://ibmworkspace.zendesk.com/agent/tickets/" +
-            res.results[0].id + "\n";
+          // Make another call to grab the comments
+          zendesk.callZendesk(ID + '/comments.json', function (err, res) {
+            if (!err) {
+              if (res.comments) {
+                comment = res.comments[0].value;
+              }
+            } else {
+              comment = "";
+            }
+
+            msg = "[*ID: " + res.results[0].id + "*](" +
+              "https://ibmworkspace.zendesk.com/agent/tickets/" +
+              res.results[0].id + ") (_" + res.results[0].status +
+              "\n*Description:* " +
+              res.results[0].description + "\n";
+            if (comment) {
+              msg += "*Last update:* " + comment;
+            }
+          });
         }
         ww.sendMessage(msg, '#016F4A', url, space, token);
       });

@@ -182,6 +182,7 @@ module.exports.talkback = function (data, token, url, space) {
             ww.sendMessage(msg, '#016F4A', url, space, token);
           }
         });
+      }
     } else {
       msg = help();
       ww.sendMessage(msg, '#016F4A', url, space, token);

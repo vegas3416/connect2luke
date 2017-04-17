@@ -1,123 +1,63 @@
 const express = require("express");
-var app = express();
 const request = require("request");
-const crypto = require("crypto");
-var bodyParser = require("body-parser");
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+const bodyParser = require("body-parser");
+const fs = require("fs");
+const http = require("http");
+const https = require("https");
 
 var talk = require("./talkBack");
-var weather = require("./weather");
-var lookUp = require("./google");
-var graph = require("./graph");
 var zendesk = require("./zendesk");
+var ww = require("./lib/ww");
 
-var APP_ID = process.env.APP_ID;
-var APP_SECRET = process.env.APP_SECRET;
-
-var WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
-const SPACE_ID = "58c4c152e4b0a3f2c30975e5";
-
-
+const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
+const SPACE_ID = "58f14f69e4b0418710518e55";
 const WWS_URL = "https://api.watsonwork.ibm.com";
 const AUTHORIZATION_API = "/oauth/token";
 const WEBHOOK_VERIFICATION_TOKEN_HEADER = "X-OUTBOUND-TOKEN".toLowerCase();
-const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
 
+var APP_ID = process.env.APP_ID;
+var APP_SECRET = process.env.APP_SECRET;
+var WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+var PORT = process.env.PORT
+var BLUEMIX = process.env.BLUEMIX;
+
+
+// Global variables
+var app = express();
 var sender = "";
+var privateKey = fs.readFileSync("key.pem");
+var certificate = fs.readFileSync("cert.pem");
+var user_db = {};
+var token = {};
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+
 
 app.get("/", function(req, res) {
+  console.log("Received GET to /");
   res.send("Luke is alive!");
+  console.log("token['value'] is " + token['value']);
+  ww.sendMessage("Access_token is " + token["value"], "FFFFFF", WWS_URL, SPACE_ID, token);
 });
 
 app.post("/webhook", function(req, res) {
+  console.log("Received POST to /webhook");
   var body = req.body;
   var eventType = body.type;
   var zen = body.zen;
   sender = body.userName;
 
 
-  // Only for Zendesk POST calls
-  // (didn't want to separate it all out into another JS file..YES I"M LAZY)
+  // Only for Zendesk trigger calls.
   if(zen)  {
-    console.log("Body before you get into zen: " + JSON.stringify(body));
-    var msg = "";
-    var color = "";
-
-    if (body.create) {
-      msg = body.id + 
-            "\n" +
-            body.title +
-            "\n*URL: *" +
-            body.url +
-            "\n" +
-            body.info;
-      if(message.indexOf('ibm') > -1) {
-        color = 'green';
-      }
-      else {
-        color = 'red';
-      }
-    }
-    else if (body.update) {
-      console.log("I got into update");
-      msg = body.id +
-            "\n" +
-            body.title +
-            "\n*Assigned To: *" +
-            body.assigned +
-            "\n*Latest request came from: *" +
-            body.requester +
-            "\n*URL: *" +
-            body.url +
-            "\n" +
-            body.info;
-      color = 'yellow';
-    }
-
-
-    console.log("This the color that got assigned: " + color);
-    console.log("\nThis is what msg has in it: " + msg);
-
-    const appMessage = {
-      "type": "appMessage",
-      "version": "1",
-      "annotations": [{
-        "type": "generic",
-        "version": "1",
-        "title": "",
-        "text": "",
-        "color": color,
-      }]
-    };
-    const sendMessageOptions = {
-      "url": WWS_URL + "/v1/spaces/" + SPACE_ID + "/messages",
-      "headers": {
-        "Content-Type": "application/json",
-        "jwt": JSON.parse(token.req.res.body)["access_token"]
-      },
-      "method": "POST",
-      "body": ""
-    };
-
-    appMessage.annotations[0].text = msg;
-    sendMessageOptions.body = JSON.stringify(appMessage);
-
-    request(sendMessageOptions, function(err, response, sendMessageBody) {
-      if (err || response.statusCode !== 201) {
-        console.log("ERROR: Posting to " +
-            sendMessageOptions.url +
-            "resulted on http status code: " +
-            response.statusCode +
-            " and error " + err);
-      }
-    });
-    return;
+    zendesk.handleTrigger(body, WWS_URL, SPACE_ID, token);
   }
 
   // Verification event
   if (eventType === "verification") {
-    verifyWorkspace(res, body.challenge);
+    console.log("Verifying...");
+    ww.verifyWorkspace(res, body.challenge, WEBHOOK_SECRET);
     return;
   }
 
@@ -125,111 +65,76 @@ app.post("/webhook", function(req, res) {
 
   // Message created event
   if (eventType === "message-created") {
-    var message = body["content"].toLowerCase();
+    var text = body.content.toLowerCase();
 
     // Ignore our own messages
     if (body.userId === APP_ID) {
       return;
     }
     // Handle if we were mentioned
-    else if (message.indexOf('luke') > -1) {
+    else if (text.indexOf('luke') > -1) {
       console.log("We were mentioned in a message");
-      talk.talkBack(body.content, body.userName, token, WWS_URL, SPACE_ID);
+      talk.talkback(body, token, WWS_URL, SPACE_ID, user_db);
     }
-    // To be implemented
-    else if(message.indexOf('!graphit') > -1){
-      console.log("Got shortcut 'graphit' in a message");
-      graph.graphit(body,res);
-    }
-
   }
 
 });
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// Trying out this weather API here:                                         //
-// http://www.girliemac.com/blog/2017/01/06/facebook-apiai-bot-nodejs/       //
+// This handles callbacks from Zendesk                                       //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 app.post('/api', function(req, res) {
   var body = req.body;
   console.log("In api post");
-  if (body.result.action === 'weather' || body.result.action === 'forecast'){
-      weather.weather(body,res);
-  }
-  else if(body.result.action === 'google'){
-      lookUp.lookUp(body,res);
-  }
-  else if(body.result.action === 'zendesk'){
-      console.log("See Zendesk as my action");
-      zendesk.zendesk(body,res, sender);
+  if(body.result.action === 'zendesk'){
+      console.log("Got a callback from Zendesk");
+      zendesk.handleTrigger(body, res, WWS_URL, SPACE_ID, token);
   }
 });
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// Listener                                                                  //
+// Start the webserver                                                       //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
-app.listen(process.env.PORT, process.env.IP, function() {
-  console.log("Started App");
-});
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// Verification function                                                     //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-function verifyWorkspace(response, challenge) {
-
-  // Create the object that is going to be sent back to Workspace for
-  // verification.
-  var bodyChallenge = {
-    // This is what we end up hashing
-    "response": challenge
-  };
-
-  var endPointSecret = WEBHOOK_SECRET;
-  var responseBodyString = JSON.stringify(bodyChallenge);
-
-  var tokenForVerification = crypto
-    // Use the webhook secret as hash key
-    .createHmac("sha256", endPointSecret)
-    // and hash the body ("response": challenge)
-    .update(responseBodyString)
-    // ending up with the hex formatted hash.
-    .digest("hex");
-  console.log("before hash");
-  // Write our response headers
-  response.writeHead(200, {
-    "Content-Type": "application/json; charset=utf-8",
-    "X-OUTBOUND-TOKEN": tokenForVerification
+if (BLUEMIX) {
+  http.createServer(app).listen(PORT, function (err, res) {
+    console.log("Bluemix server started on port " + PORT);
+    query = "users.json";
+    zendesk.callZendesk(query, function (err, res) {
+      if (err) {
+        console.log("Failed to retrieve users from Zendesk");
+      }
+      for (var i = 0; i < res.users.length; i++) {
+        user_db[res.users[i].id] = res.users[i].name;
+      }
+    });
   });
-
-  // Add our body and send it off.
-  response.end(responseBodyString);
-  console.log("All hashed up");
+} else {
+  https.createServer({
+    key: privateKey,
+    cert: certificate
+  }, app).listen(PORT, function (err, res) {
+    console.log("Server started on port " + PORT);
+    query = "users.json";
+    zendesk.callZendesk(query, function (err, res) {
+      if (err) {
+        console.log("Failed to retrieve users from Zendesk");
+      }
+      for (var i = 0; i < res.users.length; i++) {
+        user_db[res.users[i].id] = res.users[i].name;
+      }
+    });
+  });
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// Obtain a token for oAuth                                                  //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-var token = request({
-  url: WWS_URL + '/oauth/token',
-  method: 'POST',
-  auth: {
-    user: APP_ID,
-    pass: APP_SECRET
-  },
-  form: {
-    'grant_type': 'client_credentials'
+ww.getToken(WWS_URL + "/oauth/token", APP_ID, APP_SECRET, function (err, res) {
+  if (err) {
+    console.log("Failed to obtain initial token");
   }
-}, function(err, res) {
-
-  if (!err == 200) {
-    console.log("Crap, not good!!", err);
-  }
+  token['value'] =  JSON.parse(res.req.res.body).access_token;
+  token['expires'] = JSON.parse(res.req.res.body).expires_at;
+  console.log("Obtained initial token: " + JSON.stringify(token));
 });

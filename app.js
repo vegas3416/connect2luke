@@ -134,8 +134,9 @@ ww.getToken(WWS_URL + "/oauth/token", APP_ID, APP_SECRET, function (err, res) {
   if (err) {
     console.log("Failed to obtain initial token");
     console.log(err);
+  } else {
+    token['value'] =  JSON.parse(res.req.res.body).access_token;
+    token['expires'] = JSON.parse(res.req.res.body).expires_at;
+    console.log("Obtained initial token: " + JSON.stringify(token));
   }
-  token['value'] =  JSON.parse(res.req.res.body).access_token;
-  token['expires'] = JSON.parse(res.req.res.body).expires_at;
-  console.log("Obtained initial token: " + JSON.stringify(token));
 });

@@ -1,15 +1,11 @@
 const express = require("express");
 const request = require("request");
-const crypto = require("crypto");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const http = require("http");
 const https = require("https");
 
 var talk = require("./talkBack");
-var weather = require("./weather");
-var lookUp = require("./google");
-var graph = require("./graph");
 var zendesk = require("./zendesk");
 
 const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
@@ -57,7 +53,7 @@ app.post("/webhook", function(req, res) {
   // Verification event
   if (eventType === "verification") {
     console.log("Verifying...");
-    verifyWorkspace(res, body.challenge);
+    ww.verifyWorkspace(res, body.challenge, WEBHOOK_SECRET);
     return;
   }
 
@@ -76,38 +72,21 @@ app.post("/webhook", function(req, res) {
       console.log("We were mentioned in a message");
       talk.talkback(body, token, WWS_URL, SPACE_ID, user_db);
     }
-    // To be implemented
-    else if(text.indexOf('!graphit') > -1){
-      console.log("Got shortcut 'graphit' in a message");
-      graph.graphit(body,res);
-    }
-
   }
 
 });
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                                                           //
-// This handles callbacks from API.ai.                                       //
-//                                                                           //
-// Trying out this weather API here:                                         //
-// http://www.girliemac.com/blog/2017/01/06/facebook-apiai-bot-nodejs/       //
+// This handles callbacks from Zendesk                                       //
 //                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 app.post('/api', function(req, res) {
   var body = req.body;
   console.log("In api post");
-  if (body.result.action === 'weather' || body.result.action === 'forecast'){
-      console.log("Action: Weather");
-      weather.weather(body,res);
-  }
-  else if(body.result.action === 'google'){
-      console.log("Action: Google");
-      lookUp.lookUp(body,res);
-  }
-  else if(body.result.action === 'zendesk'){
-      console.log("Action: Zendesk");
-      zendesk.zendesk(body,res, sender);
+  if(body.result.action === 'zendesk'){
+      console.log("Got a callback from Zendesk");
+      zendesk.handleTrigger(body, res, WWS_URL, SPACE_ID, token);
   }
 });
 
@@ -128,6 +107,8 @@ if (BLUEMIX) {
         user_db[res.users[i].id] = res.users[i].name;
       }
     });
+    // Get token
+    token = ww.getToken(WWS_URL + '/oauth/token', APP_ID, APP_SECRET);
   });
 } else {
   https.createServer({
@@ -144,62 +125,8 @@ if (BLUEMIX) {
         user_db[res.users[i].id] = res.users[i].name;
       }
     });
+    // Get token
+    token = ww.getToken(WWS_URL + '/oauth/token', APP_ID, APP_SECRET);
   });
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// Verification function                                                     //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-function verifyWorkspace(response, challenge) {
-
-  // Create the object that is going to be sent back to Workspace for
-  // verification.
-  var bodyChallenge = {
-    // This is what we end up hashing
-    "response": challenge
-  };
-
-  var endPointSecret = WEBHOOK_SECRET;
-  var responseBodyString = JSON.stringify(bodyChallenge);
-
-  var tokenForVerification = crypto
-    // Use the webhook secret as hash key
-    .createHmac("sha256", endPointSecret)
-    // and hash the body ("response": challenge)
-    .update(responseBodyString)
-    // ending up with the hex formatted hash.
-    .digest("hex");
-  // Write our response headers
-  response.writeHead(200, {
-    "Content-Type": "application/json; charset=utf-8",
-    "X-OUTBOUND-TOKEN": tokenForVerification
-  });
-
-  // Add our body and send it off.
-  response.end(responseBodyString);
-  console.log("Webhook was verified");
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// Obtain a token for oAuth                                                  //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
-var token = request({
-  url: WWS_URL + '/oauth/token',
-  method: 'POST',
-  auth: {
-    user: APP_ID,
-    pass: APP_SECRET
-  },
-  form: {
-    'grant_type': 'client_credentials'
-  }
-}, function(err, res) {
-
-  if (!err == 200) {
-    console.log("Failed to obtain Oauth token", err);
-  }
-});

@@ -7,6 +7,7 @@ const https = require("https");
 
 var talk = require("./talkBack");
 var zendesk = require("./zendesk");
+var ww = require("./lib/ww");
 
 const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
 const SPACE_ID = "58f14f69e4b0418710518e55";
@@ -27,6 +28,7 @@ var sender = "";
 var privateKey = fs.readFileSync("key.pem");
 var certificate = fs.readFileSync("cert.pem");
 var user_db = {};
+var token = {};
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -35,6 +37,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.get("/", function(req, res) {
   console.log("Received GET to /");
   res.send("Luke is alive!");
+  console.log("token['value'] is " + token['value']);
+  ww.sendMessage("Access_token is " + token["value"], "FFFFFF", WWS_URL, SPACE_ID, token);
 });
 
 app.post("/webhook", function(req, res) {
@@ -126,18 +130,11 @@ if (BLUEMIX) {
   });
 }
 
-var token = request({
-  url: WWS_URL + '/oauth/token',
-  method: 'POST',
-  auth: {
-    user: APP_ID,
-    pass: APP_SECRET
-  },
-  form: {
-    'grant_type': 'client_credentials'
+ww.getToken(WWS_URL + "/oauth/token", APP_ID, APP_SECRET, function (err, res) {
+  if (err) {
+    console.log("Failed to obtain initial token");
   }
-}, function(err, res) {
-  if (!err == 200) {
-  console.log("Failed to obtain Oauth token", err);
-  }
+  token['value'] =  JSON.parse(res.req.res.body).access_token;
+  token['expires'] = JSON.parse(res.req.res.body).expires_at;
+  console.log("Obtained initial token: " + JSON.stringify(token));
 });

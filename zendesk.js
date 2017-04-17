@@ -16,7 +16,7 @@ module.exports.handleTrigger = function (body, request, url, space, token) {
           body.url +
           "\n" +
           body.info;
-    if(message.indexOf('ibm') > -1) {
+    if(msg.indexOf('ibm') > -1) {
       color = 'green';
     }
     else {

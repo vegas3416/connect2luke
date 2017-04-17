@@ -25,8 +25,10 @@ var BLUEMIX = process.env.BLUEMIX;
 // Global variables
 var app = express();
 var sender = "";
-var privateKey = fs.readFileSync("key.pem");
-var certificate = fs.readFileSync("cert.pem");
+if (BLUEMIX) {
+  var privateKey = fs.readFileSync("key.pem");
+  var certificate = fs.readFileSync("cert.pem");
+}
 var user_db = {};
 var token = {};
 app.use(bodyParser.json());
@@ -100,7 +102,7 @@ app.post('/api', function(req, res) {
 if (BLUEMIX) {
   http.createServer(app).listen(PORT, function (err, res) {
     console.log("Bluemix server started on port " + PORT);
-    query = "users.json";
+    var query = "users.json";
     zendesk.callZendesk(query, function (err, res) {
       if (err) {
         console.log("Failed to retrieve users from Zendesk");
@@ -116,7 +118,7 @@ if (BLUEMIX) {
     cert: certificate
   }, app).listen(PORT, function (err, res) {
     console.log("Server started on port " + PORT);
-    query = "users.json";
+    var query = "users.json";
     zendesk.callZendesk(query, function (err, res) {
       if (err) {
         console.log("Failed to retrieve users from Zendesk");

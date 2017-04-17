@@ -37,8 +37,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.get("/", function(req, res) {
   console.log("Received GET to /");
   res.send("Luke is alive!");
-  console.log("token['value'] is " + token['value']);
-  ww.sendMessage("Access_token is " + token["value"], "FFFFFF", WWS_URL, SPACE_ID, token);
 });
 
 app.post("/webhook", function(req, res) {

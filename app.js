@@ -107,8 +107,6 @@ if (BLUEMIX) {
         user_db[res.users[i].id] = res.users[i].name;
       }
     });
-    // Get token
-    token = ww.getToken(WWS_URL + '/oauth/token', APP_ID, APP_SECRET);
   });
 } else {
   https.createServer({
@@ -125,8 +123,21 @@ if (BLUEMIX) {
         user_db[res.users[i].id] = res.users[i].name;
       }
     });
-    // Get token
-    token = ww.getToken(WWS_URL + '/oauth/token', APP_ID, APP_SECRET);
   });
 }
 
+var token = request({
+  url: WWS_URL + '/oauth/token',
+  method: 'POST',
+  auth: {
+    user: APP_ID,
+    pass: APP_SECRET
+  },
+  form: {
+    'grant_type': 'client_credentials'
+  }
+}, function(err, res) {
+  if (!err == 200) {
+  console.log("Failed to obtain Oauth token", err);
+  }
+});

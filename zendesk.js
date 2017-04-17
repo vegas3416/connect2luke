@@ -44,7 +44,7 @@ module.exports.handleTrigger = function (body, request, url, space, token) {
 
   ww.sendMessage(msg, color, url, space, token);
 
-}
+};
 
 module.exports.callZendesk = function (type, callback) {
   var options = {
@@ -64,4 +64,4 @@ module.exports.callZendesk = function (type, callback) {
       callback(null, JSON.parse(body));
     }
   });
-}
+};

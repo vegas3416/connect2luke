@@ -45,7 +45,8 @@ module.exports = {
       //console.log("Response results: " + JSON.stringify(response.result));
       appMessage.annotations[0].text = response.result.fulfillment.speech;
       sendMessageOptions.body = JSON.stringify(appMessage);
-
+      
+      
       request(sendMessageOptions, function(err, response, sendMessageBody) {
         if (err || response.statusCode !== 201) {
           console.log("ERROR: Posting to " + sendMessageOptions.url + "resulted on http status code: " + response.statusCode + " and error " + err);

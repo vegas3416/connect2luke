@@ -46,7 +46,6 @@ app.post("/webhook", function(req, res) {
   var zen = body.zen;
   sender = body.userName;
 
-
   // Only for Zendesk trigger calls.
   if(zen)  {
     zendesk.handleTrigger(body, WWS_URL, SPACE_ID, token);
@@ -86,6 +85,7 @@ app.post("/webhook", function(req, res) {
 app.post('/api', function(req, res) {
   var body = req.body;
   console.log("In api post");
+
   if(body.result.action === 'zendesk'){
       console.log("Got a callback from Zendesk");
       zendesk.handleTrigger(body, res, WWS_URL, SPACE_ID, token);

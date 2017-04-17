@@ -18,7 +18,7 @@ const WEBHOOK_VERIFICATION_TOKEN_HEADER = "X-OUTBOUND-TOKEN".toLowerCase();
 var APP_ID = process.env.APP_ID;
 var APP_SECRET = process.env.APP_SECRET;
 var WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
-var PORT = process.env.PORT
+var PORT = process.env.PORT;
 var BLUEMIX = process.env.BLUEMIX;
 
 
@@ -101,6 +101,7 @@ app.post('/api', function(req, res) {
 ///////////////////////////////////////////////////////////////////////////////
 if (BLUEMIX) {
   http.createServer(app).listen(PORT, function (err, res) {
+    if(err){return;}
     console.log("Bluemix server started on port " + PORT);
     var query = "users.json";
     zendesk.callZendesk(query, function (err, res) {
@@ -117,6 +118,7 @@ if (BLUEMIX) {
     key: privateKey,
     cert: certificate
   }, app).listen(PORT, function (err, res) {
+    if(err){return;}
     console.log("Server started on port " + PORT);
     var query = "users.json";
     zendesk.callZendesk(query, function (err, res) {
@@ -133,7 +135,9 @@ if (BLUEMIX) {
 ww.getToken(WWS_URL + "/oauth/token", APP_ID, APP_SECRET, function (err, res) {
   if (err) {
     console.log("Failed to obtain initial token");
+    console.log(err);
   }
+ 
   token['value'] =  JSON.parse(res.req.res.body).access_token;
   token['expires'] = JSON.parse(res.req.res.body).expires_at;
   console.log("Obtained initial token: " + JSON.stringify(token));

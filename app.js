@@ -1,226 +1,138 @@
-var express = require("express");
-var app = express();
-var request = require("request");
-var crypto = require("crypto");
-var bodyParser = require("body-parser");
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+const express = require("express");
+const request = require("request");
+const bodyParser = require("body-parser");
+const fs = require("fs");
+const http = require("http");
+const https = require("https");
 
 var talk = require("./talkBack");
-var weather = require("./weather");
-var lookUp = require("./google");
-var graph = require("./graph");
 var zendesk = require("./zendesk");
+var ww = require("./lib/ww");
+
+const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
+const SPACE_ID = "58f14f69e4b0418710518e55";
+const WWS_URL = "https://api.watsonwork.ibm.com";
+const AUTHORIZATION_API = "/oauth/token";
+const WEBHOOK_VERIFICATION_TOKEN_HEADER = "X-OUTBOUND-TOKEN".toLowerCase();
 
 var APP_ID = process.env.APP_ID;
 var APP_SECRET = process.env.APP_SECRET;
-
-//Different from production
 var WEBHOOK_SECRET = process.env.WEBHOOK_SECRET;
+var PORT = process.env.PORT
+var BLUEMIX = process.env.BLUEMIX;
 
 
-const WWS_URL = "https://api.watsonwork.ibm.com";
-const AUTHORIZATION_API = "/oauth/token";
-var WEBHOOK_VERIFICATION_TOKEN_HEADER = "X-OUTBOUND-TOKEN".toLowerCase();
-const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
-
-////////////////////
-//Code taken from another to read in the Json object of the body
-/*function rawBody(req, res, next) {
-  var buffers = [];
-  req.on("data", function(chunk) {
-    buffers.push(chunk);
-  });
-  req.on("end", function() {
-    req.rawBody = Buffer.concat(buffers);
-    next();
-  });
-  console.log("I think I'm here");
-}
-app.use(rawBody);*/
-////////////////////
+// Global variables
+var app = express();
 var sender = "";
+var privateKey = fs.readFileSync("key.pem");
+var certificate = fs.readFileSync("cert.pem");
+var user_db = {};
+var token = {};
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-///
+
+
 app.get("/", function(req, res) {
+  console.log("Received GET to /");
   res.send("Luke is alive!");
 });
-////////////////////
-app.post("/webhook", function(req, res) {
 
+app.post("/webhook", function(req, res) {
+  console.log("Received POST to /webhook");
   var body = req.body;
   var eventType = body.type;
   var zen = body.zen;
   sender = body.userName;
- 
-  if(zen)  //ONLY FOR ZENDESK create of ticket (didn't want to separate it all out into another JS file..YES I"M LAZY)
-  {
-    
-    console.log("Body before you get into zen: " + JSON.stringify(body));
-    var msg = "";
-    var color = "";
-    //////////////
-    if (body.create) {
-      msg = body.id + "\n" + body.title + "\n*URL: *" + body.url + "\n" + body.info;
-      if(body.email.indexOf('ibm') > -1) { 
-        console.log("You got here b/c ibmer created a ticket");
-        color = 'green'; 
-      }
-      else { 
-        console.log("You got here b/c NON-ibmer created a ticket");
-        color = 'red'; 
-      }
-    }
-    else if (body.update) {
-      console.log("I got into update");
-      msg = body.id + "\n" + body.title + "\n*Assigned To: *" + body.assigned + "\n*Latest request came from: *" +
-      body.requester + "\n*URL: *" + body.url + "\n" + body.info;
-      color = 'yellow';
-    }
 
-    console.log("This the color that got assigned: " + color);
-    console.log("\nThis is what msg has in it: " + msg);
-    const appMessage = {
-      "type": "appMessage",
-      "version": "1",
-      "annotations": [{
-        "type": "generic",
-        "version": "1",
-        "title": "",
-        "text": "",
-        "color": color,
-      }]
-    };
-    const sendMessageOptions = {
-      "url": "https://api.watsonwork.ibm.com/v1/spaces/58debcace4b090f924bac8ea/messages",
-      "headers": {
-        "Content-Type": "application/json",
-        "jwt": JSON.parse(token.req.res.body)["access_token"]
-      },
-      "method": "POST",
-      "body": ""
-    };
-    appMessage.annotations[0].text = msg;
-    sendMessageOptions.body = JSON.stringify(appMessage);
+  // Only for Zendesk trigger calls.
+  if(zen)  {
+    zendesk.handleTrigger(body, WWS_URL, SPACE_ID, token);
+  }
 
-    request(sendMessageOptions, function(err, response, sendMessageBody) {
-      if (err || response.statusCode !== 201) {
-        console.log("ERROR: Posting to " + sendMessageOptions.url + "resulted on http status code: " + response.statusCode + " and error " + err);
-      }
-    });
-    return;
-    }
- 
-  //////verification event
+  // Verification event
   if (eventType === "verification") {
-    //console.log("Got here: " + body.challenge);
-    verifyWorkspace(res, body.challenge);
+    console.log("Verifying...");
+    ww.verifyWorkspace(res, body.challenge, WEBHOOK_SECRET);
     return;
   }
-  //////End of verification function//////
 
   res.status(200).end();
-  ///Event type message-created  start
+
+  // Message created event
   if (eventType === "message-created") {
-    
- 
-    var message = body["content"].toLowerCase();
-    //kick out if message comes from Luke-bot
+    var text = body.content.toLowerCase();
+
+    // Ignore our own messages
     if (body.userId === APP_ID) {
-      //console.log("INFO: Skipping our own message Body: " + JSON.stringify(body));
       return;
     }
-    
-    else if (message.indexOf('luke') > -1) {
-      console.log("Got in here");
-      talk.talkBack(body["content"], body.userName, token);
-      console.log("Finished talk back");
+    // Handle if we were mentioned
+    else if (text.indexOf('luke') > -1) {
+      console.log("We were mentioned in a message");
+      talk.talkback(body, token, WWS_URL, SPACE_ID, user_db);
     }
-    //NOT FULLY IMPLEMENTED TO DO ANYTHING AT THE MOMENT
-    else if(message.indexOf('!graphit') > -1){
-      console.log("yep");
-      graph.graphit(body,res);
-    }
+  }
 
-  } //closing bracking for IF statement 'message-created'
+});
 
-}); /////END OF app.post 
-
-////////////////////Trying OUT this weather API here
-/////  http://www.girliemac.com/blog/2017/01/06/facebook-apiai-bot-nodejs/
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// This handles callbacks from Zendesk                                       //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
 app.post('/api', function(req, res) {
-  
   var body = req.body;
   console.log("In api post");
-  if (body.result.action === 'weather' || body.result.action === 'forecast'){
-      weather.weather(body,res);
-      return;
+
+  if(body.result.action === 'zendesk'){
+      console.log("Got a callback from Zendesk");
+      zendesk.handleTrigger(body, res, WWS_URL, SPACE_ID, token);
   }
-  else if(body.result.action === 'google'){
-      lookUp.lookUp(body,res);  
-      return;
-  }
-  else if(body.result.action === 'zendesk'){
-      console.log("See Zendesk as my action");
-      zendesk.zendesk(body,res, sender);
-      console.log("Finished zendesk function");
-      return;
-  }
-  
-});
-//////////////////
-///Listener
-app.listen(process.env.PORT, process.env.IP, function() {
-  console.log("Started App");
 });
 
-//Verification function
-function verifyWorkspace(response, challenge) {
-
-  //creating the object that is going to be used to send back to Workspace for verification
-  var bodyChallenge = {
-    //req.body.challenge is what is in the post request that I need to have for Workspace verification
-    "response": challenge
-  };
-
-  var endPointSecret = WEBHOOK_SECRET;
-  var responseBodyString = JSON.stringify(bodyChallenge);
-
-  var tokenForVerification = crypto
-    //has the webhook secrte
-    .createHmac("sha256", endPointSecret)
-    //update the responseBodyString and basically concatonating the webhook to end of it
-    .update(responseBodyString)
-    //converting that entire string to a hex value
-    .digest("hex");
-  console.log("before hash");
-  //setting the header up with 200 response and the webhook hashed out
-  response.writeHead(200, {
-    "Content-Type": "application/json; charset=utf-8",
-    "X-OUTBOUND-TOKEN": tokenForVerification
+///////////////////////////////////////////////////////////////////////////////
+//                                                                           //
+// Start the webserver                                                       //
+//                                                                           //
+///////////////////////////////////////////////////////////////////////////////
+if (BLUEMIX) {
+  http.createServer(app).listen(PORT, function (err, res) {
+    console.log("Bluemix server started on port " + PORT);
+    query = "users.json";
+    zendesk.callZendesk(query, function (err, res) {
+      if (err) {
+        console.log("Failed to retrieve users from Zendesk");
+      }
+      for (var i = 0; i < res.users.length; i++) {
+        user_db[res.users[i].id] = res.users[i].name;
+      }
+    });
   });
-
-  response.end(responseBodyString);
-  console.log("All hashed up");
+} else {
+  https.createServer({
+    key: privateKey,
+    cert: certificate
+  }, app).listen(PORT, function (err, res) {
+    console.log("Server started on port " + PORT);
+    query = "users.json";
+    zendesk.callZendesk(query, function (err, res) {
+      if (err) {
+        console.log("Failed to retrieve users from Zendesk");
+      }
+      for (var i = 0; i < res.users.length; i++) {
+        user_db[res.users[i].id] = res.users[i].name;
+      }
+    });
+  });
 }
-/////////////End of Verification function
 
-//Assigning token for the oAuth token//
-var token = request({
-
-  url: 'https://api.watsonwork.ibm.com/oauth/token',
-  method: 'POST',
-  auth: {
-    user: APP_ID,
-    pass: APP_SECRET
-  },
-  form: {
-    'grant_type': 'client_credentials'
+ww.getToken(WWS_URL + "/oauth/token", APP_ID, APP_SECRET, function (err, res) {
+  if (err) {
+    console.log("Failed to obtain initial token");
   }
-}, function(err, res) {
-
-  if (!err == 200) {
-    console.log("Crap, not good!!", err);
-  }
+  token['value'] =  JSON.parse(res.req.res.body).access_token;
+  token['expires'] = JSON.parse(res.req.res.body).expires_at;
+  console.log("Obtained initial token: " + JSON.stringify(token));
 });
-//////////////////End of oAuth piece after setting up token variable/////////////

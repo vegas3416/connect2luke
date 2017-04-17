@@ -1,109 +1,67 @@
 var request = require("request");
+var ww = require("./lib/ww");
 
-module.exports = {
+const ZENDESK_URL = "https://ibmworkspace.zendesk.com/api/v2/";
 
-    zendesk: function zendeskOpen(info, res, sender) {
+module.exports.handleTrigger = function (body, request, url, space, token) {
+  console.log("Body from Zen POST: " + JSON.stringify(body));
+  var msg = "";
+  var color = "";
+  // New ticket was created
+  if (body.create) {
+    msg = body.id +
+          "\n" +
+          body.title +
+          "\n*URL: *" +
+          body.url +
+          "\n" +
+          body.info;
+    if(message.indexOf('ibm') > -1) {
+      color = 'green';
+    }
+    else {
+      color = 'red';
+    }
+  }
+  // Existing ticket was updated
+  else if (body.update) {
+    console.log("I got into update");
+    msg = body.id +
+          "\n" +
+          body.title +
+          "\n*Assigned To: *" +
+          body.assigned +
+          "\n*Latest request came from: *" +
+          body.requester +
+          "\n*URL: *" +
+          body.url +
+          "\n" +
+          body.info;
+    color = 'yellow';
+  }
 
-            var type = '';
-            var pick = '';
-            var msg = ' ';
-            var body = info;
-            //console.log(body);
-            var search = body.result.parameters;
-            console.log(search);
-            var errorMessage = (body.result.fulfillment.speech);
-            if (search.open && !search['number-integer']) {
-                console.log('open');
-                type = 'type:ticket status:open';
-                pick = 'open';
-            }
-            else if (search.id && search['number-integer']) {
-                console.log("ID search: " + search['number-integer']);
-                type = search['number-integer'];
-                //console.log(type);
-                pick = 'id';
-            }
-            else if (search.keyword) {
-                console.log("In search: " + search.description);
-                type = '"' + search.description + '"';
-                console.log("This is type: " + type);
-                pick = 'key';
-            }
-            else if (search.description && search.my){
-                type = '"' + sender + '"';
-                console.log("I got to my tickets: " + type);
-                pick = 'user';
-            }
-            var options = {
-                url: 'https://ibmworkspace.zendesk.com/api/v2/search.json?query=' + type,
-                'auth': {
-                    'user': process.env.Z_USER,
-                    'pass': process.env.Z_TOKEN,
-                    'Accept': "application/json"
-                }
-            };
+  console.log("\nZendesk trigger event became: " + msg);
 
-            function callback(error, response, body) {
-                if (error && response.statusCode != 200) {
-                    console.log("Show yourself");
-                    console.log(error);
-                }
-                else if (!error) {
-                    //&& response.statusCode == 200
-                    var json = JSON.parse(body);
-                }
-             
-                switch (pick) {
-                    case 'open':
-                        for (var x = 0; x < json.results.length; x++) {
-                            msg += "*ID: " + json.results[x].id + "* - " + json.results[x].subject + ' \n';
-                            //console.log(msg);
-                        }
-                        break;
-                    case 'id':
-                        if (json.count == 0) {
-                            msg = "I'm sorry but that Id is invalid, may have been recently deleted, or aliens abducted it";
-                        }
-                        else {
-                            msg = "*ID: " + json.results[0].id + "* \n*Description:* " + json.results[0].description + "\n*Status:* " +
-                                json.results[0].status + "\n*URL: *" + "https://ibmworkspace.zendesk.com/agent/tickets/" + json.results[0].id + "\n";
-                        }
-                        break;
-                    case 'key':
-                        for (var x = 0; x < json.results.length; x++) {
-                                if(json.results[x].subject){
-                                    console.log("Show me first ticket found: " + json.results[0].subject);
-                                    msg += "*ID: *" + json.results[x].id + " --*Subject: *" + json.results[x].subject + "\n";
-                               }
-                            }
-                        break;
-                    case 'user':
-                           for (var x = 0; x < json.results.length; x++) {
-                                if(json.results[x].subject){
-                                    msg += "*ID: *" + json.results[x].id + "\n*Status: *" + json.results[x].status + "\n*Subject: *" + json.results[x].subject +
-                                    "\n*URL: *" + "https://ibmworkspace.zendesk.com/agent/tickets/" + json.results[x].id + "\n";
-                               }
-                            //console.log(msg);
-                        }
-                        break;
-                    case 'solved':
-                        break;
-                    case 'email':
-                        break;
+  ww.sendMessage(msg, color, url, space, token);
 
-                    default:
-                        msg = errorMessage;
-                }
+}
 
-                return res.json({
-                    speech: msg,
-                    displayText: msg,
-                    source: "Zendesk"
-                });
-            }
-            
-            //Where all the magic happens
-            request(options, callback);
-            
-        } ///End of Function 
-}; ///End of Moduel  //
+module.exports.callZendesk = function (type, callback) {
+  var options = {
+    url: ZENDESK_URL + type,
+    'auth': {
+      'user': process.env.Z_USER,
+      'pass': process.env.Z_TOKEN,
+      'Accept': "application/json"
+    }
+  };
+  console.log("Performing Zendesk API call with " + JSON.stringify(options));
+  request(options, function (err, res, body) {
+    if (err) {
+      callback(err, null);
+    } else {
+      console.log("Zendesk API call succeeded, with result: " + body);
+      callback(null, JSON.parse(body));
+    }
+  });
+}

@@ -136,6 +136,6 @@ token = ww.getToken(WWS_URL, APP_ID, APP_SECRET, function (err, res) {
   } else {
     token.value =  JSON.parse(res.req.res.body).access_token;
     token.expires = JSON.parse(res.req.res.body).expires_at;
-    console.log("Obtained initial tokeni that expires at: " token.expires.toString());
+    console.log("Obtained initial token that expires at: " + token.expires.toString());
   }
 });

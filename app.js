@@ -63,7 +63,7 @@ app.post("/webhook", function(req, res) {
     }
     var text = body.content.toLowerCase();
     // Handle if we were mentioned
-    if (text.includes('luke') {
+    if (text.includes('luke')) {
       console.log("We were mentioned in a message");
       talk.talkback(body, token, WWS_URL, SPACE_ID, user_db);
     }

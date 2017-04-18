@@ -53,6 +53,7 @@ module.exports.talkback = function (data, token, url, space, user_db) {
     // "Give me more information on ticket 56 Luke"
     // "What tickets are open right now Luke"
     if (ID && (message.includes("details") || message.includes("information"))) {
+      console.log("Information about a specific ticket was requested");
       query = "search.json?query=" + ID;
       zendesk.callZendesk(query, function (err, res) {
         if (err) {
@@ -60,7 +61,6 @@ module.exports.talkback = function (data, token, url, space, user_db) {
           console.log(err);
           return;
         }
-        console.log("Information about a specific ticket was requested");
         if (res.count === 0) {
           msg = "I'm sorry but either that ticket number is invalid," +
             " the ticket has recently been deleted, or " +
@@ -121,6 +121,7 @@ module.exports.talkback = function (data, token, url, space, user_db) {
         ww.sendMessage(msg.slice(0,-1), '#016F4A', url, space, token);
       });
     } else if (message.includes("open") && message.includes("tickets")) {
+      console.log("All open tickets were requested");
       query = "search.json?query=type:ticket status:open";
       zendesk.callZendesk(query, function (err, res) {
         if (err) {
@@ -144,6 +145,7 @@ module.exports.talkback = function (data, token, url, space, user_db) {
         }
       });
     } else if (message.search("next") && message.search("page")) {
+      console.log("Next page was requested");
       if (next_page) {
         var options = {
           url: next_page,

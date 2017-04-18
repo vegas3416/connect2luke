@@ -10,7 +10,7 @@ var zendesk = require("./zendesk");
 var ww = require("./lib/ww");
 
 const WWS_OAUTH_URL = "https://api.watsonwork.ibm.com/oauth/token";
-const SPACE_ID = "58f14f69e4b0418710518e55";
+const SPACE_ID = "58debcace4b090f924bac8ea";
 const WWS_URL = "https://api.watsonwork.ibm.com";
 const AUTHORIZATION_API = "/oauth/token";
 const WEBHOOK_VERIFICATION_TOKEN_HEADER = "X-OUTBOUND-TOKEN".toLowerCase();

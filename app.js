@@ -45,13 +45,6 @@ app.post("/webhook", function(req, res) {
   console.log("Received POST to /webhook");
   var body = req.body;
   var eventType = body.type;
-  var zen = body.zen;
-  sender = body.userName;
-
-  // Only for Zendesk trigger calls.
-  if(zen)  {
-    zendesk.handleTrigger(body, WWS_URL, SPACE_ID, token);
-  }
 
   // Verification event
   if (eventType === "verification") {
@@ -64,14 +57,13 @@ app.post("/webhook", function(req, res) {
 
   // Message created event
   if (eventType === "message-created") {
-    var text = body.content.toLowerCase();
-
     // Ignore our own messages
     if (body.userId === APP_ID) {
       return;
     }
+    var text = body.content.toLowerCase();
     // Handle if we were mentioned
-    else if (text.indexOf('luke') > -1) {
+    if (text.includes('luke') {
       console.log("We were mentioned in a message");
       talk.talkback(body, token, WWS_URL, SPACE_ID, user_db);
     }
@@ -88,7 +80,7 @@ app.post('/api', function(req, res) {
   var body = req.body;
   console.log("In api post");
 
-  if(body.result.action === 'zendesk'){
+  if(body.zen){
       console.log("Got a callback from Zendesk");
       zendesk.handleTrigger(body, res, WWS_URL, SPACE_ID, token);
   }
@@ -98,10 +90,17 @@ app.post('/api', function(req, res) {
 //                                                                           //
 // Start the webserver                                                       //
 //                                                                           //
+// The presence of the 'BLUEMIX' env variable determines whether we start a  //
+// SSL capable webserver or just listen on PORT with regular HTTP.           //
+//                                                                           //
+// The user_db is a simple mapping of userid to display name. That allows us //
+// to translate ticket assignees to actual names without making an extra     //
+// Zendesk API call.                                                         //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 if (BLUEMIX) {
   http.createServer(app).listen(PORT, function (err, res) {
-    console.log("Bluemix server started on port " + PORT);
+    console.log("Insecure server started on port " + PORT);
     var query = "users.json";
     zendesk.callZendesk(query, function (err, res) {
       if (err) {
@@ -117,7 +116,7 @@ if (BLUEMIX) {
     key: privateKey,
     cert: certificate
   }, app).listen(PORT, function (err, res) {
-    console.log("Server started on port " + PORT);
+    console.log("Secure server started on port " + PORT);
     var query = "users.json";
     zendesk.callZendesk(query, function (err, res) {
       if (err) {
@@ -130,13 +129,13 @@ if (BLUEMIX) {
   });
 }
 
-ww.getToken(WWS_URL + "/oauth/token", APP_ID, APP_SECRET, function (err, res) {
+token = ww.getToken(WWS_URL, APP_ID, APP_SECRET, function (err, res) {
   if (err) {
     console.log("Failed to obtain initial token");
     console.log(err);
   } else {
     token.value =  JSON.parse(res.req.res.body).access_token;
     token.expires = JSON.parse(res.req.res.body).expires_at;
-    console.log("Obtained initial token: " + JSON.stringify(token));
+    console.log("Obtained initial tokeni that expires at: " token.expires.toString());
   }
 });

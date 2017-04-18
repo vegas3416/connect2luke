@@ -177,6 +177,7 @@ module.exports.talkback = function (data, token, url, space, user_db) {
         });
       }
     } else {
+      console.log("Reached else");
       msg = help();
       ww.sendMessage(msg, '#016F4A', url, space, token);
     }

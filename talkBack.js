@@ -11,6 +11,8 @@ var zendesk = require("./zendesk");
 var ww = require("./lib/ww");
 
 var next_page = "";
+var query = "";
+var ID = "";
 
 
 module.exports.talkback = function (data, token, url, space, user_db) {
@@ -43,7 +45,7 @@ module.exports.talkback = function (data, token, url, space, user_db) {
     var message = decode_utf8(data.content);
     var re = /[0-9]+/;
     if (message.match(re)) {
-      var ID = message.match(re)[0];
+      ID = message.match(re)[0];
       console.log("Extracted ticket number " + ID);
     }
 
@@ -51,7 +53,7 @@ module.exports.talkback = function (data, token, url, space, user_db) {
     // "Give me more information on ticket 56 Luke"
     // "What tickets are open right now Luke"
     if (ID && (message.includes("details") || message.includes("information"))) {
-      var query = "search.json?query=" + ID;
+      query = "search.json?query=" + ID;
       zendesk.callZendesk(query, function (err, res) {
         if (err) {
           console.log("Problem calling the Zendesk API");
@@ -99,7 +101,7 @@ module.exports.talkback = function (data, token, url, space, user_db) {
       // Who asked?
       var sender = data.createdBy.displayName;
       console.log("Looks like " + sender + " was the requesting party");
-      var query = "search.json?query=" + '"' + sender + '"';
+      query = "search.json?query=" + '"' + sender + '"';
       zendesk.callZendesk(query, function (err, res) {
         if (err) {
           console.log("Problem calling the Zendesk API");
@@ -119,7 +121,7 @@ module.exports.talkback = function (data, token, url, space, user_db) {
         ww.sendMessage(msg.slice(0,-1), '#016F4A', url, space, token);
       });
     } else if (message.includes("open") && message.includes("tickets")) {
-      var query = "search.json?query=type:ticket status:open";
+      query = "search.json?query=type:ticket status:open";
       zendesk.callZendesk(query, function (err, res) {
         if (err) {
           console.log("Problem calling the Zendesk API");
@@ -179,7 +181,7 @@ module.exports.talkback = function (data, token, url, space, user_db) {
       ww.sendMessage(msg, '#016F4A', url, space, token);
     }
   });
-}
+};
 
 function decode_utf8(s) {
   return unescape(encodeURIComponent(s));

@@ -25,7 +25,7 @@ var BLUEMIX = process.env.BLUEMIX;
 // Global variables
 var app = express();
 var sender = "";
-if (BLUEMIX) {
+if (!BLUEMIX) {
   var privateKey = fs.readFileSync("key.pem");
   var certificate = fs.readFileSync("cert.pem");
 }

@@ -144,7 +144,7 @@ module.exports.talkback = function (data, token, url, space, user_db) {
           ww.sendMessage(msg, '#016F4A', url, space, token);
         }
       });
-    } else if (message.search("next") && message.search("page")) {
+    } else if (message.includes("next") && message.includes("page")) {
       console.log("Next page was requested");
       if (next_page) {
         var options = {

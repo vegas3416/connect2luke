@@ -135,7 +135,16 @@ ww.getToken(WWS_URL, APP_ID, APP_SECRET, function (err, res) {
     console.log(err);
   } else {
     token.value =  JSON.parse(res.req.res.body).access_token;
-    token.expires = JSON.parse(res.req.res.body).expires_in;
-    console.log("Obtained initial token that expires in " + token.expires + " seconds");
+    expires = JSON.parse(res.req.res.body).expires_in;
+    // expiration is set to "now"
+    var expiration = new Date();
+    // extract epoch time in milliseconds
+    var timeobj = expiration.getTime();
+    // add the token expiration time in milliseconds to it
+    timeobj += (expires * 1000);
+    // Finally, update expiration to reflect actual token expiration
+    expiration.setTime(timeobj);
+    token.expires = expiration;
+    console.log("Obtained initial token that expires at" + token.expires.toString());
   }
 });

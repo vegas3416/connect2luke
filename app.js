@@ -129,13 +129,13 @@ if (BLUEMIX) {
   });
 }
 
-token = ww.getToken(WWS_URL, APP_ID, APP_SECRET, function (err, res) {
+ww.getToken(WWS_URL, APP_ID, APP_SECRET, function (err, res) {
   if (err) {
     console.log("Failed to obtain initial token");
     console.log(err);
   } else {
     token.value =  JSON.parse(res.req.res.body).access_token;
-    token.expires = JSON.parse(res.req.res.body).expires_at;
-    console.log("Obtained initial token that expires at: " + token.expires.toString());
+    token.expires = JSON.parse(res.req.res.body).expires_in;
+    console.log("Obtained initial token that expires in " + token.expires + " seconds");
   }
 });

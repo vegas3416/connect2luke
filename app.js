@@ -23,35 +23,29 @@ var BLUEMIX = process.env.BLUEMIX;
 
 
 // Global variables
-var app = express();
-var sender = "";
-if (!BLUEMIX) {
-  var privateKey = fs.readFileSync("key.pem");
-  var certificate = fs.readFileSync("cert.pem");
-}
-var user_db = {};
-var token = {};
+var app = express(); // Request handler
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+if (!BLUEMIX) {
+  // The cert *must* be the full chain cert to make Zendesk happy.
+  var privateKey = fs.readFileSync("privkey.pem");
+  var certificate = fs.readFileSync("fullchain.pem");
+}
+var user_db = {}; // Maps Zendesk user ID to names
+var token = {}; // Auth token for WW
 
 
-
+// This is just a way to confirm Luke is online.
 app.get("/", function(req, res) {
   console.log("Received GET to /");
   res.send("Luke is alive!");
 });
 
+// This is our handler for WW callbacks.
 app.post("/webhook", function(req, res) {
   console.log("Received POST to /webhook");
   var body = req.body;
   var eventType = body.type;
-  var zen = body.zen;
-  sender = body.userName;
-
-  // Only for Zendesk trigger calls.
-  if(zen)  {
-    zendesk.handleTrigger(body, WWS_URL, SPACE_ID, token);
-  }
 
   // Verification event
   if (eventType === "verification") {
@@ -64,14 +58,13 @@ app.post("/webhook", function(req, res) {
 
   // Message created event
   if (eventType === "message-created") {
-    var text = body.content.toLowerCase();
-
     // Ignore our own messages
     if (body.userId === APP_ID) {
       return;
     }
+    var text = body.content.toLowerCase();
     // Handle if we were mentioned
-    else if (text.indexOf('luke') > -1) {
+    if (text.includes('luke')) {
       console.log("We were mentioned in a message");
       talk.talkback(body, token, WWS_URL, SPACE_ID, user_db);
     }
@@ -79,16 +72,12 @@ app.post("/webhook", function(req, res) {
 
 });
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// This handles callbacks from Zendesk                                       //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+// This handles callbacks from Zendesk.
 app.post('/api', function(req, res) {
+  console.log("Received POST to /api");
   var body = req.body;
-  console.log("In api post");
 
-  if(body.result.action === 'zendesk'){
+  if(body.zen){
       console.log("Got a callback from Zendesk");
       zendesk.handleTrigger(body, res, WWS_URL, SPACE_ID, token);
   }
@@ -98,17 +87,26 @@ app.post('/api', function(req, res) {
 //                                                                           //
 // Start the webserver                                                       //
 //                                                                           //
+// The presence of the 'BLUEMIX' env variable determines whether we start a  //
+// SSL capable webserver or just listen on PORT with regular HTTP.           //
+//                                                                           //
+// The user_db is a simple mapping of userid to display name. That allows us //
+// to translate ticket assignees to actual names without making an extra     //
+// Zendesk API call.                                                         //
+//                                                                           //
 ///////////////////////////////////////////////////////////////////////////////
 if (BLUEMIX) {
   http.createServer(app).listen(PORT, function (err, res) {
-    console.log("Bluemix server started on port " + PORT);
+    console.log("Insecure server started on port " + PORT);
     var query = "users.json";
     zendesk.callZendesk(query, function (err, res) {
       if (err) {
         console.log("Failed to retrieve users from Zendesk");
-      }
-      for (var i = 0; i < res.users.length; i++) {
-        user_db[res.users[i].id] = res.users[i].name;
+      } else {
+        for (var i = 0; i < res.users.length; i++) {
+          user_db[res.users[i].id] = res.users[i].name;
+        }
+        console.log("User database has been created.");
       }
     });
   });
@@ -117,26 +115,27 @@ if (BLUEMIX) {
     key: privateKey,
     cert: certificate
   }, app).listen(PORT, function (err, res) {
-    console.log("Server started on port " + PORT);
+    console.log("Secure server started on port " + PORT);
     var query = "users.json";
     zendesk.callZendesk(query, function (err, res) {
       if (err) {
         console.log("Failed to retrieve users from Zendesk");
-      }
-      for (var i = 0; i < res.users.length; i++) {
-        user_db[res.users[i].id] = res.users[i].name;
+      } else {
+        for (var i = 0; i < res.users.length; i++) {
+          user_db[res.users[i].id] = res.users[i].name;
+        }
+        console.log("User database has been created.");
       }
     });
   });
 }
 
-ww.getToken(WWS_URL + "/oauth/token", APP_ID, APP_SECRET, function (err, res) {
+// Grab our initial WW auth token. They're good for roughly 12 hours.
+ww.getToken(WWS_URL, APP_ID, APP_SECRET, function (err, res) {
   if (err) {
     console.log("Failed to obtain initial token");
     console.log(err);
   } else {
-    token.value =  JSON.parse(res.req.res.body).access_token;
-    token.expires = JSON.parse(res.req.res.body).expires_at;
-    console.log("Obtained initial token: " + JSON.stringify(token));
+    token = res;
   }
 });

@@ -48,6 +48,7 @@ module.exports.handleTrigger = function (body, request, url, space, token) {
 
 module.exports.callZendesk = function (type, callback) {
   var options = {
+    //url appends type to zendeks URL to be used for what is sent to Zen
     url: ZENDESK_URL + type,
     'auth': {
       'user': process.env.Z_USER,
@@ -58,6 +59,31 @@ module.exports.callZendesk = function (type, callback) {
   console.log("Performing Zendesk API call with " + JSON.stringify(options));
   request(options, function (err, res, body) {
     if (err) {
+      //callback is a function(err,res) and the reason why null is there b/c we are only looking at the err part of it
+      callback(err, null);
+    } else {
+      console.log ("Got zendesk api call");
+      //console.log("Zendesk API call succeeded, with result: " + body);
+      callback(null, JSON.parse(body));
+    }
+  });
+};
+
+///update ticket from zendesk
+module.exports.updateZendesk = function (type, callback) {
+  var options = {
+    //url appends type to zendeks URL to be used for what is sent to Zen
+    url: ZENDESK_URL + type,
+    'auth': {
+      'user': process.env.Z_USER,
+      'pass': process.env.Z_TOKEN,
+      'Accept': "application/json"
+    }
+  };
+  console.log("Performing Zendesk API call with " + JSON.stringify(options));
+  request(options, function (err, res, body) {
+    if (err) {
+      //callback is a function(err,res) and the reason why null is there b/c we are only looking at the err part of it
       callback(err, null);
     } else {
       console.log ("Got zendesk api call");

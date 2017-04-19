@@ -62,7 +62,7 @@ module.exports.callZendesk = function (type, callback) {
       //callback is a function(err,res) and the reason why null is there b/c we are only looking at the err part of it
       callback(err, null);
     } else {
-      console.log ("Got zendesk api call");
+      console.log ("Got zendesk api calls");
       //console.log("Zendesk API call succeeded, with result: " + body);
       callback(null, JSON.parse(body));
     }

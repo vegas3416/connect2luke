@@ -23,24 +23,25 @@ var BLUEMIX = process.env.BLUEMIX;
 
 
 // Global variables
-var app = express();
-var sender = "";
-if (!BLUEMIX) {
-  var privateKey = fs.readFileSync("key.pem");
-  var certificate = fs.readFileSync("cert.pem");
-}
-var user_db = {};
-var token = {};
+var app = express(); // Request handler
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+if (!BLUEMIX) {
+  // The cert *must* be the full chain cert to make Zendesk happy.
+  var privateKey = fs.readFileSync("privkey.pem");
+  var certificate = fs.readFileSync("fullchain.pem");
+}
+var user_db = {}; // Maps Zendesk user ID to names
+var token = {}; // Auth token for WW
 
 
-
+// This is just a way to confirm Luke is online.
 app.get("/", function(req, res) {
   console.log("Received GET to /");
   res.send("Luke is alive!");
 });
 
+// This is our handler for WW callbacks.
 app.post("/webhook", function(req, res) {
   console.log("Received POST to /webhook");
   var body = req.body;
@@ -71,11 +72,7 @@ app.post("/webhook", function(req, res) {
 
 });
 
-///////////////////////////////////////////////////////////////////////////////
-//                                                                           //
-// This handles callbacks from Zendesk                                       //
-//                                                                           //
-///////////////////////////////////////////////////////////////////////////////
+// This handles callbacks from Zendesk.
 app.post('/api', function(req, res) {
   var body = req.body;
   console.log("Received POST to /api");
@@ -105,9 +102,11 @@ if (BLUEMIX) {
     zendesk.callZendesk(query, function (err, res) {
       if (err) {
         console.log("Failed to retrieve users from Zendesk");
-      }
-      for (var i = 0; i < res.users.length; i++) {
-        user_db[res.users[i].id] = res.users[i].name;
+      } else {
+        for (var i = 0; i < res.users.length; i++) {
+          user_db[res.users[i].id] = res.users[i].name;
+        }
+        console.log("User database has been created.");
       }
     });
   });
@@ -121,14 +120,17 @@ if (BLUEMIX) {
     zendesk.callZendesk(query, function (err, res) {
       if (err) {
         console.log("Failed to retrieve users from Zendesk");
-      }
-      for (var i = 0; i < res.users.length; i++) {
-        user_db[res.users[i].id] = res.users[i].name;
+      } else {
+        for (var i = 0; i < res.users.length; i++) {
+          user_db[res.users[i].id] = res.users[i].name;
+        }
+        console.log("User database has been created.");
       }
     });
   });
 }
 
+// Grab our initial WW auth token. They're good for roughly 12 hours.
 ww.getToken(WWS_URL, APP_ID, APP_SECRET, function (err, res) {
   if (err) {
     console.log("Failed to obtain initial token");

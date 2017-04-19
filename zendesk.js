@@ -65,25 +65,43 @@ module.exports.callZendesk = function (type, callback) {
 };
 
 //update ticket test
-module.exports.updateZendesk = function (type, callback) {
+module.exports.updateZendesk = function (type) {
+  
   var options = {
     //url appends type to zendeks URL to be used for what is sent to Zen
     url: ZENDESK_URL + type,
-    'auth': {
-      'user': process.env.Z_USER,
-      'pass': process.env.Z_TOKEN,
-      'Accept': "application/json"
-    }
+    "headers":{
+      "Content-Type": "application/json",
+      },
+        'auth': {
+        'user': process.env.Z_USER,
+        'pass': process.env.Z_TOKEN,
+        'Accept': "application/json",
+      },
+      'body': "",
+      'method': "PUT"
   };
+    var ticketUpdate = {
+      "ticket": {
+        "comment": {
+          "body": "YOU UPDATED ME",
+          "public": true
+        },
+        "status": "pending"
+      }
+    };
+    
+  options.body = JSON.stringify(ticketUpdate);
+  
   console.log("Performing Zendesk API call with " + JSON.stringify(options));
   request(options, function (err, res, body) {
     if (err) {
       //callback is a function(err,res) and the reason why null is there b/c we are only looking at the err part of it
-      callback(err, null);
+      console.log(err);
     } else {
-      console.log ("Got zendesk api call");
+      console.log ("You updated a ticket");
       //console.log("Zendesk API call succeeded, with result: " + body);
-      callback(null, JSON.parse(body));
+      console.log(body);
     }
   });
 };

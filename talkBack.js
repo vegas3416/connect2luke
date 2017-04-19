@@ -100,6 +100,20 @@ module.exports.talkback = function (data, token, url, space, user_db) {
           });
         }
       });
+    } else if (ID && message.includes("update") && message.includes("ticket")) {
+      console.log("Updating A ticket");
+      query = "search.json?query=" + ID;
+      zendesk.updateZendesk(query); 
+      
+        /*for (var x = 0; x < res.results.length; x++) {
+          msg += "*[" + res.results[x].id + "]* - [" +
+            res.results[x].subject + "](" +
+            "https://ibmworkspace.zendesk.com/agent/tickets/" +
+            res.results[x].id + ")" + " - assigned to " +
+            user_db[res.results[x].assignee_id] + "\n";
+        }*/
+        ///update trigger should come back to space to prove user update was successful 
+     
     } else if (message.includes("my") && message.includes("tickets")) {
       console.log("A user requested their tickets");
       // Who asked?

@@ -1,0 +1,4 @@
+applications:
+- name: Luke-dev
+random-route: true
+memory: 128M

@@ -60,7 +60,7 @@ module.exports.callZendesk = function (type, callback) {
     if (err) {
       callback(err, null);
     } else {
-      console.log("Zendesk API call succeeded, with result: " + body);
+      console.log("Zendesk API call succeeded");
       callback(null, JSON.parse(body));
     }
   });

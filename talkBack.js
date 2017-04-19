@@ -143,6 +143,34 @@ module.exports.talkback = function (data, token, url, space, user_db) {
           ww.sendMessage(msg, '#016F4A', url, space, token);
         }
       });
+    } else if (ID && message.includes("update") && message.includes("ticket")) {
+      //This is the attempt to update a ticket from a space TEST 1
+      
+      //query checks for PENDING tickets only that we can update
+      //query = "search.json?query=type:ticket status:pending";
+      //query a specific ticket ID
+      query = "search.json?query=" + ID;
+      zendesk.callZendesk(query, function (err, res) {
+        if (err) {
+          console.log("Problem calling the Zendesk API");
+          console.log(err);
+          return;
+        }
+        for (var x = 0; x < res.results.length; x++) {
+          msg += "*[" + res.results[x].id + "]* - [" +
+            res.results[x].subject + "](" +
+            "https://ibmworkspace.zendesk.com/agent/tickets/" +
+            res.results[x].id + ")" + " - assigned to " +
+            user_db[res.results[x].assignee_id] + "\n";
+        }
+        ww.sendMessage(msg.slice(0,-1), '#016F4A', url, space, token);
+        // We need to check next page
+        if (res.next_page) {
+          next_page = res.next_page;
+          msg = "Some results omitted. Ask for the next page if desired.";
+          ww.sendMessage(msg, '#016F4A', url, space, token);
+        }
+      });
     } else if (message.search("next") && message.search("page")) {
       if (next_page) {
         var options = {

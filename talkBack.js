@@ -123,6 +123,7 @@ module.exports.talkback = function (data, token, url, space, user_db) {
               "_)\n";
           }
         }
+        // The slice removes the trailing newline character.
         ww.sendMessage(msg.slice(0,-1), '#016F4A', url, space, token);
       });
     } else if (message.includes("open") && message.includes("tickets")) {
@@ -165,7 +166,6 @@ module.exports.talkback = function (data, token, url, space, user_db) {
             'Accept': "application/json"
           }
         };
-        console.log("Performing Zendesk API call with " + JSON.stringify(options));
         request(options, function (err, res, body) {
           if (err) {
             console.log("Failed to retrieve next page.");

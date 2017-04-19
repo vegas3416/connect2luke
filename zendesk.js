@@ -43,6 +43,7 @@ module.exports.handleTrigger = function (body, res, url, space, token) {
 };
 
 module.exports.callZendesk = function (type, callback) {
+  console.log("Entered zendesk.callZendesk.");
   var options = {
     url: ZENDESK_URL + type,
     'auth': {

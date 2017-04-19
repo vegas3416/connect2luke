@@ -74,8 +74,8 @@ app.post("/webhook", function(req, res) {
 
 // This handles callbacks from Zendesk.
 app.post('/api', function(req, res) {
-  var body = req.body;
   console.log("Received POST to /api");
+  var body = req.body;
 
   if(body.zen){
       console.log("Got a callback from Zendesk");

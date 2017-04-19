@@ -17,7 +17,6 @@ var ID = "";
 
 module.exports.talkback = function (data, token, url, space, user_db) {
   console.log("Entered talkBack.talkback");
-  console.log("Provided data is " + data);
   var msg_id = data.messageId;
   var body = "{ message (id: \"" + msg_id + "\")" +
     "{ createdBy { displayName id }" +
@@ -198,11 +197,13 @@ module.exports.talkback = function (data, token, url, space, user_db) {
 
 // Stolen from Stack Overflow
 function decode_utf8(s) {
+  console.log("Entered talkback.decode_utf8.");
   return unescape(encodeURIComponent(s));
 }
 
 // Also stolen from Stack Overflow
 function contains(array, obj) {
+  console.log("Entered talkback.contains.");
   for (var i = 0; i < array.length; i++) {
     if (array[i] === obj) {
       return true;
@@ -212,6 +213,7 @@ function contains(array, obj) {
 }
 
 function help() {
+  console.log("Entered talkback.help.");
   return "You can ask me for open tickets, your tickets, or details about " +
     "an existing ticket if you know the ID number.";
 }

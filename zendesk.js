@@ -3,7 +3,7 @@ var ww = require("./lib/ww");
 
 const ZENDESK_URL = "https://ibmworkspace.zendesk.com/api/v2/";
 
-module.exports.handleTrigger = function (body, request, url, space, token) {
+module.exports.handleTrigger = function (body, res, url, space, token) {
   res.status(200).end();
   console.log("Body from Zen POST: " + JSON.stringify(body));
   var msg = "";
